@@ -173,6 +173,7 @@ class ProductVariationController extends Controller
         $request->merge([
             'body_price' => str_replace(' ', '', $request->body_price) ?: 0,
             'price' => str_replace(' ', '', $request->price),
+            'currency' => $request->input('currency', 1),
             'count' => str_replace(' ', '', $request->count),
             'unit' => $request->input('unit', 1),
         ]);
@@ -264,12 +265,12 @@ class ProductVariationController extends Controller
         return view('backend.product-variation.update', compact('productVariation', 'productDropdown'));
     }
 
-
     public function update(Request $request, ProductVariation $productVariation)
     {
         $request->merge([
             'body_price' => str_replace(' ', '', $request->body_price) ?: 0,
             'price' => str_replace(' ', '', $request->price),
+            'currency' => $request->input('currency', 1),
             'count' => str_replace(' ', '', $request->count),
             'unit' => $request->input('unit', 1),
         ]);
@@ -330,6 +331,7 @@ class ProductVariationController extends Controller
         $productVariation->count = $request->count;
         $productVariation->unit = $request->unit;
         $productVariation->price = $request->price;
+        $productVariation->currency = $request->currency;
 
         // 💰 USD bo‘lsa, kursni olish
         if ($productVariation->currency == 2) {
@@ -348,7 +350,7 @@ class ProductVariationController extends Controller
         $productVariation->save();
 
         // return redirect()->route('product-variation.list', $productVariation->product_id)->with('success', 'Махсулот янгиланди!');
-        return redirect()->route('product.index')->with('success', 'Махсулот яратилди!');
+        return redirect()->route('product.index')->with('success', 'Махсулот янгиланди!');
     }
 
 

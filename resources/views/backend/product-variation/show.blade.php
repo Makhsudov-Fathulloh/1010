@@ -1,4 +1,4 @@
-<x-backend.layouts.main title="{{ 'Маҳсулотни кўриш: ' . ucfirst($productVariation->title) }}">
+<x-backend.layouts.main title="{!! 'Маҳсулотни кўриш: ' . ucfirst($productVariation->title) !!}">
 
     <style>
         th {
@@ -55,7 +55,7 @@
                 </tr>
                 <tr>
                     <th>Умумий</th>
-                    <td><span class="fw-bold text-info">{{ \App\Helpers\PriceHelper::format($productVariation->total_price, $productVariation->currency, false) }}</span> {{ \App\Services\StatusService::getCurrency()[$productVariation->currency] }}</td>
+                    <td><span class="fw-bold text-info">{{ \App\Helpers\PriceHelper::format($productVariation->total_price, $productVariation->currency, false) }}</span> сум</td>
                 </tr>
                 {{--<tr>--}}
                 {{--<th>Toп</th>--}}

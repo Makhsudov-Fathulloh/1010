@@ -1,4 +1,4 @@
-<x-backend.layouts.main title="{{ 'Маҳсулот турини кўриш: ' . ucfirst($product->title) }}">
+<x-backend.layouts.main title="{!! 'Маҳсулот турини кўриш: ' . ucfirst($product->title) !!}">
 
     <style>
         th {

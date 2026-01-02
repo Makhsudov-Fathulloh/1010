@@ -5,7 +5,7 @@
 @endphp
 
 <x-backend.layouts.main
-    title="{{ 'Махсулот ( ' . ucfirst($product->title) . ' (' . ucfirst($product->warehouse->title) . ')' . '):' }}">
+    title="{!! 'Махсулот ( ' . ucfirst($product->title) . ' (' . ucfirst($product->warehouse->title) . ')' . '):' !!}">
 
     <div class="row">
         <div class="card shadow w-100">
@@ -23,7 +23,7 @@
                                 {{--@if (auth()->user()->role->title === 'Admin')--}}
                                 {{--<th>{!! sortLink('price', 'Тан нархи') !!}</th>--}}
                                 {{--@endif--}}
-                                <th>{!! sortLink('price', 'Нархи(сўм)') !!}</th>
+                                <th>{!! sortLink('price', 'Нархи') !!}</th>
                                 <th>{!! sortLink('count', 'Сони') !!}</th>
                                 <th>{!! sortLink('total_price', 'Умумий(сўм)') !!}</th>
                                 {{--<th>{!! sortLink('top', 'Toп') !!}</th>--}}
@@ -179,7 +179,7 @@
                                             class="count fw-bold text-primary">{{ CountHelper::format($variation->count, $variation->unit, false) }}</span> {{ StatusService::getTypeCount()[$variation->unit] }}
                                     </p>
                                     <p class="card-text">
-                                        <strong>{!! sortLink('total_price', 'Умумий:') !!} </strong><span
+                                        <strong>{!! sortLink('total_price', 'Умумий(сўм):') !!} </strong><span
                                             class="total_price fw-bold text-info">{{ PriceHelper::format($variation->total_price, $variation->currency, false) }}</span> {{ StatusService::getCurrency()[$variation->currency] }}</p>
                                     <p class="card-text">
                                         <strong>{!! sortLink('status', 'Статус:') !!}</strong> {{ StatusService::getList()[$variation->status] ?? '-' }}

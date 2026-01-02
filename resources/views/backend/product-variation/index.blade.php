@@ -22,7 +22,7 @@
                                 {{--@can('aodAccess')--}}
                                 {{--<th>{!! sortLink('body_price', 'Тан нархи') !!}</th>--}}
                                 {{--@endcan--}}
-                                <th>{!! sortLink('price', 'Нархи(сўм)') !!}</th>
+                                <th>{!! sortLink('price', 'Нархи') !!}</th>
                                 <th>{!! sortLink('count', 'Сони') !!}</th>
                                 <th>{!! sortLink('total_price', 'Умумий(сўм)') !!}</th>
                                 {{--                                <th>{!! sortLink('top', 'Toп') !!}</th>--}}
@@ -199,7 +199,7 @@
                                             class="count fw-bold text-primary">{{ CountHelper::format($productVariation->count, $productVariation->unit, false) }}</span> {{ StatusService::getTypeCount()[$productVariation->unit] }}
                                     </p>
                                     <p class="card-text">
-                                        <strong>{!! sortLink('total_price', 'Умумий:') !!}</strong>
+                                        <strong>{!! sortLink('total_price', 'Умумий(сўм):') !!}</strong>
                                         <span
                                             class="total_price fw-bold text-info">{{ PriceHelper::format($productVariation->total_price, $productVariation->currency, false) }}</span> {{ StatusService::getCurrency()[$productVariation->currency] }}
                                     </p>

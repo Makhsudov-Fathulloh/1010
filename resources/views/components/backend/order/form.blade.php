@@ -177,8 +177,8 @@
         @foreach($variations as $variation)
                 optionsHtml += `<option value="{{ $variation->id }}" data-price="{{ $variation->price }}"
             {{--    ${selectedIds.includes('{{ $variation->id }}') ? 'display' : ''}>--}}
-                {{ $variation->code }} — {{ $variation->product->title }} → {{ $variation->title }}
-            ({{ number_format($variation->price, 0, '', ' ') }} сўм)
+                {!! $variation->code !!} — {!! $variation->product->title !!} → {!! $variation->title !!}
+            [{{ \App\Helpers\PriceHelper::format($variation->price, $variation->currency) }}]
             [{{ \App\Helpers\CountHelper::format($variation->count, $variation->unit) }}]
             </option>`;
         @endforeach
@@ -261,7 +261,7 @@
                     title: '{{ $variation->product->title }} → {{ $variation->title }}',
                     price: '{{ $variation->price }}',
                     text: `{{ $variation->code }} — {{ $variation->product->title }} → {{ $variation->title }}
-                    ({{ number_format($variation->price, 0, '', ' ') }} сўм)
+                    ({{ \App\Helpers\PriceHelper::format($variation->price, $variation->currency) }})
                     @if ($variation->unit == StatusService::UNIT_PSC)
                         [{{ number_format($variation->count, 0, '', ' ') }} та]
                     @elseIf ($variation->unit == StatusService::UNIT_KG)
