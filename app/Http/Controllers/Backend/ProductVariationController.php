@@ -253,8 +253,8 @@ class ProductVariationController extends Controller
 
         $productVariation->save();
 
-        //        return redirect()->route('product-variation.index');
-        return redirect()->route('product-variation.list', $product->id)->with('success', 'Махсулот яратилди!');
+        // return redirect()->route('product-variation.list', $product->id)->with('success', 'Махсулот яратилди!');
+        return redirect()->route('product.index')->with('success', 'Махсулот яратилди!');
     }
 
 
@@ -347,7 +347,8 @@ class ProductVariationController extends Controller
 
         $productVariation->save();
 
-        return redirect()->route('product-variation.list', $productVariation->product_id)->with('success', 'Махсулот янгиланди!');
+        // return redirect()->route('product-variation.list', $productVariation->product_id)->with('success', 'Махсулот янгиланди!');
+        return redirect()->route('product.index')->with('success', 'Махсулот яратилди!');
     }
 
 
