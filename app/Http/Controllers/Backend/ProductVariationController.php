@@ -175,6 +175,7 @@ class ProductVariationController extends Controller
             'price' => str_replace(' ', '', $request->price),
             'currency' => $request->input('currency', 1),
             'count' => str_replace(' ', '', $request->count),
+            'min_count' => str_replace(' ', '', $request->min_count),
             'unit' => $request->input('unit', 1),
         ]);
 
@@ -188,6 +189,7 @@ class ProductVariationController extends Controller
                 'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
                 'body_price' => 'nullable|numeric|min:0',
                 'count' => 'required|numeric|min:0',
+                'min_count' => 'nullable|numeric|min:0',
                 'unit' => 'required|integer',
                 'price' => 'required|numeric|min:0',
                 'currency' => 'required|in:1,2',
@@ -234,6 +236,7 @@ class ProductVariationController extends Controller
         $productVariation->body_price = $request->body_price;
 
         $productVariation->count = $request->count;
+        $productVariation->min_count = $request->min_count;
         $productVariation->unit = $request->unit;
         $productVariation->price = $request->price;
 
@@ -272,6 +275,7 @@ class ProductVariationController extends Controller
             'price' => str_replace(' ', '', $request->price),
             'currency' => $request->input('currency', 1),
             'count' => str_replace(' ', '', $request->count),
+            'min_count' => str_replace(' ', '', $request->min_count),
             'unit' => $request->input('unit', 1),
         ]);
 
@@ -285,6 +289,7 @@ class ProductVariationController extends Controller
                 'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
                 'body_price' => 'nullable|numeric|min:0',
                 'count' => 'required|numeric|min:0',
+                'min_count' => 'nullable|numeric|min:0',
                 'unit' => 'required|integer',
                 'price' => 'required|numeric|min:0',
                 'currency' => 'required|in:1,2',
@@ -329,6 +334,7 @@ class ProductVariationController extends Controller
         $productVariation->body_price = $request->body_price;
 
         $productVariation->count = $request->count;
+        $productVariation->min_count = $request->min_count;
         $productVariation->unit = $request->unit;
         $productVariation->price = $request->price;
         $productVariation->currency = $request->currency;

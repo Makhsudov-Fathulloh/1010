@@ -40,7 +40,7 @@
                                                   class="form-control ckeditor"
                                                   rows="10">
                                                 {{ old('description', $productVariation->description ?? '') }}
-                                            </textarea>
+                                        </textarea>
                                     </div>
 
                                     <div class="row">
@@ -81,7 +81,7 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-md-8 mb-3">
+                                        <div class="col-md-5 mb-3">
                                             <label for="count" class="form-label">Сони</label>
                                             <input type="text" id="count" name="count"
                                                    class="form-control filter-numeric"
@@ -90,8 +90,28 @@
                                             <div class="text-danger small">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="unit" class="form-label">Тури</label>
+
+                                        <div class="col-md-5 mb-3">
+                                            <label for="min_count" class="form-label">Минимал микдор</label>
+                                            @php
+                                                $typeMinCount = $productVariation->unit;
+                                                $minCount = $productVariation->min_count;
+
+                                                $minCountValue = ($typeMinCount == \App\Services\StatusService::UNIT_KG)
+                                                    ? number_format((float)$minCount, 3, '.', '')
+                                                    : (int)$minCount;
+                                            @endphp
+                                            <input type="text" id="min_count" name="min_count"
+                                                   class="form-control filter-numeric-decimal"
+                                                   value="{{ old('min_count', $minCountValue ?? '') }}">
+
+                                            @error('min_count')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="col-md-2 mb-3">
+                                            <label for="unit" class="form-label">Маҳсулот тури</label>
                                             <select name="unit" id="unit" class="form-control">
                                                 @foreach (\App\Services\StatusService::getTypeCount() as $key => $label)
                                                     <option

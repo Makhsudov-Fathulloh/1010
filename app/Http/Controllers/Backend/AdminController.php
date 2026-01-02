@@ -2,23 +2,36 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Models\ExpenseAndIncome;
-use App\Models\Order;
 use App\Models\User;
+use App\Models\Order;
 use App\Models\UserDebt;
 use App\Models\ExchangeRates;
 use App\Services\StatusService;
+use App\Models\ExpenseAndIncome;
+use App\Models\ProductVariation;
 use Illuminate\Routing\Controller as BaseController;
 
 class AdminController extends BaseController
 {
     public function index()
     {
+        $lowProducts = ProductVariation::checkLowStock();
+
+        if (!empty($lowProducts)) {
+            $message = "Минимал микдордаги махсулотлар: <br>";
+            $items = implode('<br>', $lowProducts);
+            $fullMessage = $message . $items;
+
+            if (auth()->check() && in_array(auth()->user()->role->title, ['Admin', 'Manager', 'Moderator', 'Developer'])) {
+                session()->flash('info', $fullMessage);
+            }
+        }
+
         $userCount = User::where('role_id', \App\Models\Role::where('title', 'Клиент')->value('id'))->count();
         $employeeCount = User::where('role_id', '!=', \App\Models\Role::where('title', 'Клиент')->value('id'))->count();
 
         $exchangeRate = ExchangeRates::where('currency', 'USD')->value('rate');
-        
+
         $expenseTotalUzs = ExpenseAndIncome::where('type', ExpenseAndIncome::TYPE_EXPENSE)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum('amount');
         $expenseTotalUsd = ExpenseAndIncome::where('type', ExpenseAndIncome::TYPE_EXPENSE)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum('amount');
 

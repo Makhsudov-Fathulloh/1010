@@ -54,6 +54,10 @@
                     <td><span class="fw-bold text-primary">{{ \App\Helpers\CountHelper::format($productVariation->count, $productVariation->unit, false) }}</span> {{ \App\Services\StatusService::getTypeCount()[$productVariation->unit] }}</td>
                 </tr>
                 <tr>
+                    <th>Минимал микдор</th>
+                    <td><span class="fw-bold text-danger">{{ \App\Helpers\CountHelper::format($productVariation->min_count, $productVariation->unit, false) }}</span> {{ \App\Services\StatusService::getTypeCount()[$productVariation->unit] }}</td>
+                </tr>
+                <tr>
                     <th>Умумий</th>
                     <td><span class="fw-bold text-info">{{ \App\Helpers\PriceHelper::format($productVariation->total_price, $productVariation->currency, false) }}</span> сум</td>
                 </tr>

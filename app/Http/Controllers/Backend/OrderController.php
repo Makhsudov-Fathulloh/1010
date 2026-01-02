@@ -140,13 +140,13 @@ class OrderController extends Controller
 
         $variations = ProductVariation::with('product:id,title')
             ->where('count', '>', 0)
-            ->get(['id', 'product_id', 'code', 'title', 'price', 'count', 'unit']);
+            ->get(['id', 'product_id', 'code', 'title', 'price_uzs', 'count', 'unit']);
 
         $defaultUserId = User::where('username', 'Стандарт клиент')->value('id') ?? null;
 
         $currentCurrency = old('currency', StatusService::CURRENCY_UZS);
         $currencyLabel = $currentCurrency == StatusService::CURRENCY_UZS ? 'сўм' : '$';
-        $oldItems = [['product_variation_id' => null, 'quantity' => 1, 'price' => '']];
+        $oldItems = [['product_variation_id' => null, 'quantity' => 1, 'price_uzs' => '']];
         $order = null;
         $totalPriceValue = null;
         $cashPaidValue = null;
@@ -192,7 +192,7 @@ class OrderController extends Controller
                 return [
                     'product_variation_id' => $item['product_variation_id'],
                     'quantity' => (float)preg_replace('/[^\d.]/', '', $item['quantity']),
-                    'price' => (float)preg_replace('/[^\d.]/', '', $item['price']),
+                    'price_uzs' => (float)preg_replace('/[^\d.]/', '', $item['price_uzs']),
                 ];
             })->toArray();
             $request->merge(['items' => $items]);
@@ -211,7 +211,7 @@ class OrderController extends Controller
             'items' => 'required|array',
             'items.*.product_variation_id' => 'required|exists:product_variation,id',
             'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.price' => 'required|numeric|min:0',
+            'items.*.price_uzs' => 'required|numeric|min:0',
             'remaining_debt' => 'nullable|numeric|min:0',
             'total_price' => 'nullable|numeric|min:0',
         ]);
@@ -234,7 +234,7 @@ class OrderController extends Controller
             foreach ($validated['items'] as $item) {
                 $variation = ProductVariation::with('product')->findOrFail($item['product_variation_id']);
                 $quantity = $item['quantity'];
-                $price = $item['price'];
+                $price = $item['price_uzs'];
 
                 if ($variation->count < $quantity) {
                     throw new \Exception("Омборда етарли маҳсулот йўқ: " . $variation->product->title . ' - ' . $variation->title);
@@ -248,7 +248,7 @@ class OrderController extends Controller
                     'product_variation_id' => $variation->id,
                     'title' => $variation->product->title . ' - ' . $variation->title,
                     'quantity' => $quantity,
-                    'price' => $price,
+                    'price_uzs' => $price,
                     'total_price' => round($price * $quantity, 2),
                 ];
             }
@@ -290,39 +290,68 @@ class OrderController extends Controller
             }
 
             // 🔹 OrderItems va Profit/Loss yozuvlari
+            $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
+
+            if (!$usdRate || $usdRate <= 0) {
+                throw new \Exception('USD kurs topilmadi');
+            }
+
             foreach ($orderItems as $item) {
+
                 $item['order_id'] = $order->id;
                 $orderItem = OrderItem::create($item);
 
                 $productVariation = ProductVariation::find($item['product_variation_id']);
-                $originalPrice = $productVariation->body_price; // UZS bo‘yicha
 
-                $soldPriceBase = round($item['price'] * $exchangeRate, 2);
-                $difference = $soldPriceBase - $originalPrice;
+                /*
+                |--------------------------------------------------------------------------
+                | ORIGINAL PRICE → UZS
+                |--------------------------------------------------------------------------
+                */
+                $originalPriceUZS = $productVariation->body_price;
+
+                if ($productVariation->currency == StatusService::CURRENCY_USD) {
+                    $originalPriceUZS *= $usdRate;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | SOLD PRICE → UZS
+                |--------------------------------------------------------------------------
+                */
+                if ($order->currency == StatusService::CURRENCY_USD) {
+                    // Sotish USD da → UZS ga o‘tkazamiz
+                    $soldPriceUZS = $item['price_uzs'] * $usdRate;
+                } else {
+                    // Sotish UZS da
+                    $soldPriceUZS = $item['price_uzs'];
+                }
+
+                $difference = $soldPriceUZS - $originalPriceUZS;
 
                 if ($difference > 0) {   // 🟢 Foyda
                     ProfitAndLoss::create([
                         'product_variation_id' => $item['product_variation_id'],
-                        'order_item_id' => $orderItem->id,
-                        'original_price' => $originalPrice,
-                        'sold_price' => $soldPriceBase,
-                        'profit_amount' => $difference,
-                        'loss_amount' => 0,
-                        'count' => $item['quantity'],
-                        'type' => ProfitAndLoss::TYPE_PROFIT,
-                        'total_amount' => $difference * $item['quantity'],
+                        'order_item_id'        => $orderItem->id,
+                        'original_price'       => $originalPriceUZS,
+                        'sold_price'           => $soldPriceUZS,
+                        'profit_amount'        => $difference,
+                        'loss_amount'          => 0,
+                        'count'                => $item['quantity'],
+                        'type'                 => ProfitAndLoss::TYPE_PROFIT,
+                        'total_amount'         => $difference * $item['quantity'],
                     ]);
                 } elseif ($difference < 0) {   // 🔴 Zarar
                     ProfitAndLoss::create([
                         'product_variation_id' => $item['product_variation_id'],
-                        'order_item_id' => $orderItem->id,
-                        'original_price' => $originalPrice,
-                        'sold_price' => $soldPriceBase,
-                        'profit_amount' => 0,
-                        'loss_amount' => abs($difference),
-                        'count' => $item['quantity'],
-                        'type' => ProfitAndLoss::TYPE_LOSS,
-                        'total_amount' => abs($difference) * $item['quantity'],
+                        'order_item_id'        => $orderItem->id,
+                        'original_price'       => $originalPriceUZS,
+                        'sold_price'           => $soldPriceUZS,
+                        'profit_amount'        => 0,
+                        'loss_amount'          => abs($difference),
+                        'count'                => $item['quantity'],
+                        'type'                 => ProfitAndLoss::TYPE_LOSS,
+                        'total_amount'         => abs($difference) * $item['quantity'],
                     ]);
                 }
             }
@@ -352,7 +381,7 @@ class OrderController extends Controller
 
         $variations = ProductVariation::with('product:id,title')
             ->where('count', '>', 0)
-            ->get(['id', 'product_id', 'code', 'title', 'price', 'count', 'unit']);
+            ->get(['id', 'product_id', 'code', 'title', 'price_uzs', 'count', 'unit']);
 
         $order->load('orderItems.productVariation.product');
 
@@ -374,7 +403,7 @@ class OrderController extends Controller
             'variations' => $variations,
             'currentCurrency' => $currentCurrency,
             'currencyLabel' => $currentCurrency == StatusService::CURRENCY_USD ? '$' : 'сўм',
-            'oldItems' => old('items', $order->orderItems ?? [['product_variation_id' => '', 'quantity' => 1, 'price' => '']]),
+            'oldItems' => old('items', $order->orderItems ?? [['product_variation_id' => '', 'quantity' => 1, 'price_uzs' => '']]),
             'totalPriceValue' => old('total_price', $format($order->total_price)),
             'totalPaidValue' => old('total_amount_paid', $format($order->total_amount_paid)),
             'remainingDebtValue' => old('remaining_debt', $format($order->remaining_debt)),
@@ -403,7 +432,7 @@ class OrderController extends Controller
                 return [
                     'product_variation_id' => $item['product_variation_id'],
                     'quantity' => (float)preg_replace('/[^\d.]/', '', $item['quantity']),
-                    'price' => (float)preg_replace('/[^\d.]/', '', $item['price']),
+                    'price_uzs' => (float)preg_replace('/[^\d.]/', '', $item['price_uzs']),
                 ];
             })->toArray();
             $request->merge(['items' => $items]);
@@ -421,7 +450,7 @@ class OrderController extends Controller
             'items' => 'required|array',
             'items.*.product_variation_id' => 'required|exists:product_variation,id',
             'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.price' => 'required|numeric|min:0',
+            'items.*.price_uzs' => 'required|numeric|min:0',
             'remaining_debt' => 'nullable|numeric|min:0',
             'total_price' => 'nullable|numeric|min:0',
         ]);
@@ -456,7 +485,7 @@ class OrderController extends Controller
             foreach ($validated['items'] as $item) {
                 $variation = ProductVariation::with('product')->findOrFail($item['product_variation_id']);
                 $quantity = $item['quantity'];
-                $price = $item['price'];
+                $price = $item['price_uzs'];
 
                 if ($variation->count < $quantity) {
                     throw new \Exception("Омборда етарли маҳсулот йўқ: " . $variation->product->title . ' - ' . $variation->title);
@@ -470,7 +499,7 @@ class OrderController extends Controller
                     'product_variation_id' => $variation->id,
                     'title' => $variation->product->title . ' - ' . $variation->title,
                     'quantity' => $quantity,
-                    'price' => $price,
+                    'price_uzs' => $price,
                     'total_price' => round($price * $quantity, 2),
                 ];
             }
@@ -499,7 +528,6 @@ class OrderController extends Controller
             ]);
 
             // 🔹 Foydalanuvchi qarzi
-            // 🔹 Foydalanuvchi qarzi
             $userDebt = UserDebt::where('order_id', $order->id)->first();
 
             if ($userDebt) {
@@ -519,39 +547,65 @@ class OrderController extends Controller
             }
 
             // 🔹 OrderItems va Profit/Loss
+            $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
+
+            if (!$usdRate || $usdRate <= 0) {
+                throw new \Exception('USD kurs topilmadi');
+            }
+
             foreach ($orderItems as $item) {
+
+                // 🔹 OrderItem yaratish
                 $item['order_id'] = $order->id;
                 $orderItem = OrderItem::create($item);
 
-                $productVariation = ProductVariation::find($item['product_variation_id']);
-                $originalPrice = $productVariation->body_price; // UZS
+                $productVariation = ProductVariation::findOrFail($item['product_variation_id']);
 
-                $soldPriceBase = round($item['price'] * $exchangeRate, 2);
-                $difference = $soldPriceBase - $originalPrice;
+                /*
+                |--------------------------------------------------------------------------
+                | ORIGINAL PRICE → UZS
+                |--------------------------------------------------------------------------
+                */
+                $originalPriceUZS = $productVariation->body_price;
+
+                if ($productVariation->currency == StatusService::CURRENCY_USD) {
+                    $originalPriceUZS *= $usdRate;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | SOLD PRICE → UZS
+                |--------------------------------------------------------------------------
+                */
+                $soldPriceUZS = $order->currency == StatusService::CURRENCY_USD
+                    ? $item['price_uzs'] * $usdRate
+                    : $item['price_uzs'];
+
+                $difference = $soldPriceUZS - $originalPriceUZS;
 
                 if ($difference > 0) {   // 🟢 Foyda
                     ProfitAndLoss::create([
                         'product_variation_id' => $item['product_variation_id'],
-                        'order_item_id' => $orderItem->id,
-                        'original_price' => $originalPrice,
-                        'sold_price' => $soldPriceBase,
-                        'profit_amount' => $difference,
-                        'loss_amount' => 0,
-                        'count' => $item['quantity'],
-                        'type' => ProfitAndLoss::TYPE_PROFIT,
-                        'total_amount' => $difference * $item['quantity'],
+                        'order_item_id'        => $orderItem->id,
+                        'original_price'       => $originalPriceUZS,
+                        'sold_price'           => $soldPriceUZS,
+                        'profit_amount'        => $difference,
+                        'loss_amount'          => 0,
+                        'count'                => $item['quantity'],
+                        'type'                 => ProfitAndLoss::TYPE_PROFIT,
+                        'total_amount'         => $difference * $item['quantity'],
                     ]);
                 } elseif ($difference < 0) {   // 🔴 Zarar
                     ProfitAndLoss::create([
                         'product_variation_id' => $item['product_variation_id'],
-                        'order_item_id' => $orderItem->id,
-                        'original_price' => $originalPrice,
-                        'sold_price' => $soldPriceBase,
-                        'profit_amount' => 0,
-                        'loss_amount' => abs($difference),
-                        'count' => $item['quantity'],
-                        'type' => ProfitAndLoss::TYPE_LOSS,
-                        'total_amount' => abs($difference) * $item['quantity'],
+                        'order_item_id'        => $orderItem->id,
+                        'original_price'       => $originalPriceUZS,
+                        'sold_price'           => $soldPriceUZS,
+                        'profit_amount'        => 0,
+                        'loss_amount'          => abs($difference),
+                        'count'                => $item['quantity'],
+                        'type'                 => ProfitAndLoss::TYPE_LOSS,
+                        'total_amount'         => abs($difference) * $item['quantity'],
                     ]);
                 }
             }
