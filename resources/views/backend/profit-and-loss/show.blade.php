@@ -47,7 +47,7 @@
                     </tr>
                 @endif
                 <tr>
-                    <th>Сони</th> <td>{{ number_format($profitAndLoss->count, 0, '', ' ') }} та</td>
+                    <th>Миқдори</th> <td>{{ number_format($profitAndLoss->count, 0, '', ' ') }} та</td>
                 </tr>
                 <tr>
                     <th>Умумий зарар</th><td>{{ number_format($profitAndLoss->total_amount, 0, '', ' ') }} сўм</td>

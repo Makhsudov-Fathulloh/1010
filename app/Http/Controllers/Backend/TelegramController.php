@@ -13,7 +13,7 @@ class TelegramController extends Controller
     {
         Log::info('✅ Telegram webhook келди:', $request->all());
 
-        return response()->json(['ok' => true]);
+        // return response()->json(['ok' => true]);
 
         $data = $request->all();
         $message = $data['message'] ?? [];

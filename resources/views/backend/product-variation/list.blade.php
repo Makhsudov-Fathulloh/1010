@@ -24,7 +24,7 @@
                                 {{--<th>{!! sortLink('price', 'Тан нархи') !!}</th>--}}
                                 {{--@endif--}}
                                 <th>{!! sortLink('price', 'Нархи') !!}</th>
-                                <th>{!! sortLink('count', 'Сони') !!}</th>
+                                <th>{!! sortLink('count', 'Миқдори') !!}</th>
                                 <th>{!! sortLink('total_price', 'Умумий(сўм)') !!}</th>
                                 {{--<th>{!! sortLink('top', 'Toп') !!}</th>--}}
                                 <th>{!! sortLink('status', 'Статус') !!}</th>
@@ -128,7 +128,7 @@
                                                 data-id="{{ $variation->id }}"
                                                 data-title="{{ $variation->title }}"
                                                 data-count="{{ $variation->count }}"
-                                                title="Маҳсулот сонини ошириш">
+                                                title="Маҳсулот миқдорини ошириш">
                                             <i class="fa fa-plus"></i> Қўшиш
                                         </button>
 
@@ -175,7 +175,7 @@
                                     <p class="card-text">
                                         <strong>{!! sortLink('price', 'Нархи:') !!}</strong><span class="fw-bold text-success">{{ PriceHelper::format($variation->price, $variation->currency, false) }}</span> {{ StatusService::getCurrency()[$variation->currency] }}
                                     </p>
-                                    <p class="card-text"><strong>{!! sortLink('count', 'Сони:') !!} </strong><span
+                                    <p class="card-text"><strong>{!! sortLink('count', 'Миқдори:') !!} </strong><span
                                             class="count fw-bold text-primary">{{ CountHelper::format($variation->count, $variation->unit, false) }}</span> {{ StatusService::getTypeCount()[$variation->unit] }}
                                     </p>
                                     <p class="card-text">
@@ -191,7 +191,7 @@
                                     <div class="btn-group w-100">
                                         <x-backend.action route="product-variation" :id="$variation->id"
                                                           :variation="$variation"
-                                                          addCountTitle="Махсулот сонини ошириш" :addCount="true"
+                                                          addCountTitle="Махсулот миқдорини ошириш" :addCount="true"
                                                           :view="true" :edit="true" :delete="true"/>
                                     </div>
                                 </div>
@@ -210,7 +210,7 @@
                             <form id="addCountForm">
                                 @csrf
                                 <div class="modal-header">
-                                    <h5 class="modal-title">Маҳсулот сонини ошириш.</h5>
+                                    <h5 class="modal-title">Маҳсулот миқдорини ошириш.</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
@@ -220,11 +220,11 @@
                                         <input type="text" id="variation_title" class="form-control" disabled>
                                     </div>
                                     <div class="mb-3">
-                                        <label>Ҳозирги сони:</label>
+                                        <label>Ҳозирги миқдори:</label>
                                         <input type="text" id="current_count" class="form-control" disabled>
                                     </div>
                                     <div class="mb-3">
-                                        <label>Қўшиладиган маҳсулот сони:</label>
+                                        <label>Қўшиладиган маҳсулот миқдори:</label>
                                         <input type="number" id="add_count" name="add_count" class="form-control"
                                                min="1" required>
                                     </div>
@@ -377,7 +377,7 @@
                 const typeCount = parseInt(document.querySelector('.add-count-btn[data-id="'+id+'"]').dataset.unit || 1, 10);
 
                 if (isNaN(addCount) || addCount < 1) {
-                    showCustomConfirm('Илтимос, маҳсулот сонини киритинг!', 'warning');
+                    showCustomConfirm('Илтимос, маҳсулот миқдорини киритинг!', 'warning');
                     return;
                 }
 

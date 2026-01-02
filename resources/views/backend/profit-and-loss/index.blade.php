@@ -1,5 +1,6 @@
 @php
     use App\Models\ProfitAndLoss;
+    use App\Helpers\CountHelper;
 @endphp
 
 <x-backend.layouts.main title="{{ 'Фойда ва зарар савдолар' }}">
@@ -11,7 +12,7 @@
                     <div class="table-responsive d-none d-md-block">
                         <table class="table table-bordered table-hover">
                             <thead>
-                            <tr>
+                            <tr class="text-center">
                                 <th class="col-id">{!! sortLink('id', 'Id') !!}</th>
                                 <th>{!! sortLink('order_item_id', 'Буюртма элементи') !!}</th>
                                 <th>{!! sortLink('product_variation_id', 'Маҳсулот') !!}</th>
@@ -19,7 +20,7 @@
                                 <th>{!! sortLink('sold_price', 'Сотилган нарх') !!}</th>
                                 <th>{!! sortLink('profit_amount', 'Фойда') !!}</th>
                                 <th>{!! sortLink('loss_amount', 'Зарар') !!}</th>
-                                <th>{!! sortLink('count', 'Сони') !!}</th>
+                                <th>{!! sortLink('count', 'Миқдори') !!}</th>
                                 <th>{!! sortLink('type', 'Тури') !!}</th>
                                 <th>{!! sortLink('total_amount', 'Умумий') !!}</th>
                                 <th>{!! sortLink('created_at', 'Яратилди') !!}</th>
@@ -106,7 +107,7 @@
                                     <td>{{ number_format($profitAndLoss->sold_price, 0, '', ' ') }}</td>
                                     <td class="text-success fw-bold">{{ number_format($profitAndLoss->profit_amount, 0, '', ' ') }}</td>
                                     <td class="text-danger fw-bold">{{ number_format($profitAndLoss->loss_amount, 0, '', ' ') }}</td>
-                                    <td>{{ number_format($profitAndLoss->count, 0, '', ' ') }}</td>
+                                    <td class="count fw-bold text-primary">{{ number_format($profitAndLoss->count, 0, '', ' ') }}</td>
                                     <td style="text-align: center; width: 100px">{{ ProfitAndLoss::getTypeList()[$profitAndLoss->type] }}</td>
                                     <td>{{ number_format($profitAndLoss->total_amount, 0, '', ' ') }}</td>
                                     <td>{{ $profitAndLoss->created_at?->format('Y-m-d H:i') }}</td>
@@ -161,7 +162,7 @@
                                         <strong>{!! sortLink('loss_amount', 'Зарар:') !!} </strong><strong
                                             style="color: red">{{ $profitAndLoss->loss_amount }}</strong></p>
                                     <p class="card-text">
-                                        <strong>{!! sortLink('count', 'Сони:') !!} </strong>{{ $profitAndLoss->count }}
+                                        <strong>{!! sortLink('count', 'Миқдори:') !!} </strong>{{ $profitAndLoss->count }}
                                     </p>
                                     <p class="card-text">
                                         <strong>{!! sortLink('type', 'Тури:') !!} </strong>{{ ProfitAndLoss::getTypeList()[$profitAndLoss->type] }}

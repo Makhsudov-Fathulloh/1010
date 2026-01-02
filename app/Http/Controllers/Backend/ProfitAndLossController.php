@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\ExpenseAndIncome;
-use App\Models\OrderItem;
 use App\Models\ProfitAndLoss;
 use App\Models\ProductVariation;
 use App\Models\Search\ProfitAndLossSearch;
@@ -12,7 +10,6 @@ use App\Services\DateFilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class ProfitAndLossController extends Controller
 {
@@ -40,11 +37,11 @@ class ProfitAndLossController extends Controller
             ->pluck('title', 'id'); // [id => title]
 
         // ProfitAndLoss ichidagi barcha order_item_id lar
-//        $orderItemIds = ProfitAndLoss::distinct()->pluck('order_item_id');
-//        $orderItems = OrderItem::query()
-//            ->whereIn('order_item.id', $orderItemIds)
-//            ->join('product_variation', 'product_variation.id', '=', 'order_item.product_variation_id')
-//            ->pluck('product_variation.title', 'order_item.id');
+        // $orderItemIds = ProfitAndLoss::distinct()->pluck('order_item_id');
+        // $orderItems = OrderItem::query()
+        //      ->whereIn('order_item.id', $orderItemIds)
+        //      ->join('product_variation', 'product_variation.id', '=', 'order_item.product_variation_id')
+        //      ->pluck('product_variation.title', 'order_item.id');
 
         $data = ProfitAndLoss::calculateTotals($request);
 
@@ -53,7 +50,7 @@ class ProfitAndLossController extends Controller
         return view('backend.profit-and-loss.index', compact(
             'profitAndLosses',
             'productVariations',
-//            'orderItems',
+            //'orderItems',
             'data',
         ));
     }

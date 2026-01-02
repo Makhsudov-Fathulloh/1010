@@ -50,7 +50,7 @@
                     <td><span class="fw-bold text-success">{{ \App\Helpers\PriceHelper::format($productVariation->price, $productVariation->currency, false) }}</span> {{ \App\Services\StatusService::getCurrency()[$productVariation->currency] }}</td>
                 </tr>
                 <tr>
-                    <th>Сони</th>
+                    <th>Миқдори</th>
                     <td><span class="fw-bold text-primary">{{ \App\Helpers\CountHelper::format($productVariation->count, $productVariation->unit, false) }}</span> {{ \App\Services\StatusService::getTypeCount()[$productVariation->unit] }}</td>
                 </tr>
                 <tr>
