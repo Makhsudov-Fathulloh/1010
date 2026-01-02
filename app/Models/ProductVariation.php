@@ -23,6 +23,7 @@ class ProductVariation extends Model
         'description',
         'image',
         'count',
+        'min_count',
         'unit',
         'body_price',
         'price',
@@ -119,6 +120,11 @@ class ProductVariation extends Model
         $this->count -= $qty;
         $this->recalculateTotalPrice();
         $this->save();
+
+        // Agar limitdan pastga tushsa notify eventini chaqiramiz:
+        if ($this->count <= $this->min_count) {
+            event(new \App\Events\ProductLowEvent($this));
+        }
     }
 
     public function incrementStock(int $qty): void
@@ -126,5 +132,17 @@ class ProductVariation extends Model
         $this->count += $qty;
         $this->recalculateTotalPrice();
         $this->save();
+    }
+
+    public static function checkLowStock(): array
+    {
+        return static::whereColumn('count', '<=', 'min_count')
+            ->get(['id', 'code', 'title', 'count', 'unit'])
+            ->map(function ($item) {
+                $count = \App\Helpers\CountHelper::format($item->count, $item->unit) ?? '';
+
+                return "{$item->code} - {$item->title} - {$count}";
+            })
+            ->toArray();
     }
 }

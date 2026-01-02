@@ -19,11 +19,12 @@ return new class extends Migration
             $table->decimal('body_price', 15, 2)->default(0);
 
             $table->decimal('count', 16, 3);
+            $table->decimal('min_count', 10, 3)->nullable();
             $table->tinyInteger('unit');
 
             // 💰 Narx va valyuta ustunlari
             $table->decimal('price', 16, 3);
-            $table->tinyInteger('currency');                                      // 1 = so‘m yoki 2 = $
+            $table->tinyInteger('currency');                    // 1 = so‘m yoki 2 = $
             $table->decimal('rate', 15, 2)->default(1);         // 1$ = nechta so‘m
             $table->decimal('price_uzs', 15, 2)->default(0);    // so‘mda qiymat (price * rate)
 

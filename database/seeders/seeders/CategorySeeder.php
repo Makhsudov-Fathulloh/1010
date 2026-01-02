@@ -20,14 +20,9 @@ class CategorySeeder extends Seeder
 
             $сategories = [
                 [
-                    'title' => 'Ширинликлар',
-                    'subtitle' => 'Ширинликлар турлари',
-                    'description' => 'Ширинликлар турлари',
-                ],
-                [
-                    'title' => 'Ичимликлар',
-                    'subtitle' => 'Ичимликлар турлари',
-                    'description' => 'Ичимликлар турлари',
+                    'title' => '1010 (Qurilish mollari)',
+                    'subtitle' => '1010 (Qurilish mollari)',
+                    'description' => '1010 (Qurilish mollari)',
                 ],
             ];
 
