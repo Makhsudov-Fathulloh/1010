@@ -3,7 +3,7 @@
 @endphp
 
 
-<form autocomplete="off" action="{{ $action }}" method="POST" enctype="multipart/form-data">
+<form action="{{ $action }}" method="POST" enctype="multipart/form-data">
     @csrf
     @if ($method === 'PUT')
         @method('PUT')
@@ -31,7 +31,7 @@
 
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Фойдаланувчи номи (Username)</label>
-                                        <input type="text" id="username" name="username"  autocomplete="new-username" class="form-control"
+                                        <input type="text" id="username" name="username" class="form-control"
                                                value="{{ old('username', $user->username ?? '') }}">
                                         @error('username')
                                         <div class="text-danger">{{ $message }}</div>
@@ -41,7 +41,7 @@
                                     @if (Route::currentRouteName() == 'user.edit')
                                         <div class="mb-3">
                                             <label for="current_password">Эски пароль</label>
-                                            <input type="password" id="current_password"  autocomplete="new-password" name="current_password"
+                                            <input type="password" id="current_password" name="current_password"
                                                    class="form-control">
                                             @error('current_password')
                                             <div style="color:red">{{ $message }}</div> @enderror

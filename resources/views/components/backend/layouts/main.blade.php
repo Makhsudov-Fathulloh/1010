@@ -1274,7 +1274,7 @@
             </div>
         </div>
 
-        <div id="flash-messages"  class="d-none d-lg-block" style="position: fixed; top: 20px; right: 20px; z-index: 1050;">
+        <div id="flash-messages"  class="{{ session('large_screen') ? 'd-none d-lg-block' : '' }}" style="position: fixed; top: 20px; right: 20px; z-index: 1050;">
             @foreach (['success', 'error', 'warning', 'info'] as $msg)
                 @if(session($msg))
                     <div class="flash-alert d-flex justify-content-between align-items-center"

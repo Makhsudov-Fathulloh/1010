@@ -135,13 +135,15 @@
                                     <td style="width: 100px">{{ StatusService::getList()[$productVariation->status] }}</td>
                                     <td>{{ $productVariation->created_at?->format('Y-m-d H:i') }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-success add-count-btn"
-                                                data-id="{{ $productVariation->id }}"
-                                                data-title="{{ $productVariation->title }}"
-                                                data-count="{{ $productVariation->count }}"
-                                                title="Маҳсулот миқдорини ошириш">
-                                            <i class="fa fa-plus"></i> Қўшиш
-                                        </button>
+                                        @if (in_array(auth()->user()->role->title, ['Admin', 'Manager', 'Developer']))
+                                            <button type="button" class="btn btn-sm btn-success add-count-btn"
+                                                    data-id="{{ $productVariation->id }}"
+                                                    data-title="{{ $productVariation->title }}"
+                                                    data-count="{{ $productVariation->count }}"
+                                                    title="Маҳсулот миқдорини ошириш">
+                                                <i class="fa fa-plus"></i> Қўшиш
+                                            </button>
+                                        @endif
                                         <x-backend.action route="product-variation" :id="$productVariation->id"
                                                           :view="true" :edit="true" :delete="true"/>
                                     </td>

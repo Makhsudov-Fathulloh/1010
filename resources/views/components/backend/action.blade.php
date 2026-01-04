@@ -44,12 +44,12 @@
     'viewClass' => 'btn btn-info btn-sm',
     'editClass' => 'btn btn-warning btn-sm',
 
-    'deleteRoles' => ['Admin', 'Manager', 'Developer'],
+    'addEditDel' => ['Admin', 'Manager', 'Developer'],
 ])
 
 <div class="btn-group custom-actions">
 
-    @if($addCount)
+    @if($addCount && in_array(auth()->user()->role->title, $addEditDel))
         <button type="button"
                 class="btn btn-sm btn-success add-count-btn"
                 data-id="{{ $attributes->get('data-id', $variation->id) }}"
@@ -78,7 +78,7 @@
         <a href="{{ url()->previous() }}" class="btn btn-dark"><i class="fa fa-arrow-left"></i> Орқага</a>
     @endif
 
-    @if($add)
+    @if($add && in_array(auth()->user()->role->title, $addEditDel))
         <a href="{{ url("admin/$route/$id/$subRoute/create") }}"
            class="btn btn-info btn-sm">
             <i class="fa fa-plus" title="{{ $createTitle }}"></i>
@@ -99,7 +99,7 @@
         </a>
     @endif
 
-    @if($edit && in_array(auth()->user()->role->title, $deleteRoles))
+    @if($edit && in_array(auth()->user()->role->title, $addEditDel))
         <a href="{{ route($route . '.edit', $id) }}"
            class="{{ $editClass }}" title="Таҳрирлаш">
             @if($editLabel)
@@ -110,7 +110,7 @@
         </a>
     @endif
 
-    @if($delete && in_array(auth()->user()->role->title, $deleteRoles))
+    @if($delete && in_array(auth()->user()->role->title, $addEditDel))
         <button type="button" class="btn btn-danger btn-sm"
                 onclick="deleteButton('{{ route($route . '.destroy', $id) }}', {{ $id }})"
                 title="Ўчириш">

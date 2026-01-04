@@ -22,28 +22,32 @@
                     </div>
                 </a>
             </div>
-            <!-- Order Item -->
-            <div class="col-md-6 col-lg-2 col-xlg-3">
-                <a href="{{ route('order-item.index') }}">
-                    <div class="card card-hover">
-                        <div class="box bg-info text-center">
-                            <h1 class="font-light text-white">
-                                <svg height="40px" width="40px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 502 502" xml:space="preserve">
-                                    <g><g><polygon style="fill:#D1DCEB;" points="389.81,126.779 356.721,126.779 356.721,49 263.721,49 263.721,89 134.721,89 134.721,49 41.722,49 41.722,435 198.107,435 198.107,492 460.278,492 460.278,197.247 		"/><path style="fill:#4EC9DC;" d="M231.721,49V36.59c0-14.685-11.905-26.59-26.59-26.59h-11.819c-14.686,0-26.59,11.905-26.59,26.59 V49h-32v40h129V49H231.721z"/></g><polygon style="fill:#4EC9DC;" points="389.81,197.247 389.81,126.779 460.278,197.247 	"/><g>
-                                            <path d="M41.722,39c-5.522,0-10,4.477-10,10v386c0,5.523,4.478,10,10,10h146.386v47c0,5.523,4.478,10,10,10h262.171 c5.522,0,10-4.477,10-10V197.247c0-2.652-1.054-5.196-2.929-7.071l-70.468-70.468c-1.876-1.875-4.419-2.929-7.071-2.929h-23.089 V49c0-5.523-4.478-10-10-10h-115v-2.41c0-20.176-16.414-36.59-36.59-36.59h-11.819c-20.176,0-36.591,16.415-36.591,36.59V39 H41.722z M399.811,150.921l36.326,36.326h-36.326V150.921z M191.721,59c5.522,0,10-4.477,10-10s-4.478-10-10-10h-15v-2.41 c0-9.148,7.442-16.59,16.591-16.59h11.819c9.147,0,16.59,7.442,16.59,16.59V49c0,5.523,4.478,10,10,10h22v20h-109V59H191.721z M51.722,425V59h73v30c0,5.523,4.478,10,10,10h129c5.522,0,10-4.477,10-10V59h73v57.779H198.107c-5.522,0-10,4.477-10,10V425 H51.722z M208.107,136.779H379.81v60.468c0,5.523,4.478,10,10,10h60.468V482H208.107V136.779z"/>
-                                            <path d="M243.949,253.468h125.402c5.522,0,10-4.477,10-10s-4.478-10-10-10H243.949c-5.522,0-10,4.477-10,10 S238.427,253.468,243.949,253.468z"/>
-                                            <path d="M414.437,283.478H243.949c-5.522,0-10,4.477-10,10s4.478,10,10,10h170.487c5.522,0,10-4.477,10-10 S419.959,283.478,414.437,283.478z"/>
-                                            <path d="M414.437,333.487H243.949c-5.522,0-10,4.477-10,10s4.478,10,10,10h170.487c5.522,0,10-4.477,10-10 S419.959,333.487,414.437,333.487z"/>
-                                            <path d="M414.437,383.497H243.949c-5.522,0-10,4.477-10,10s4.478,10,10,10h170.487c5.522,0,10-4.477,10-10	S419.959,383.497,414.437,383.497z"/>
-                                            <path d="M414.437,233.468h-16.67c-5.522,0-10,4.477-10,10s4.478,10,10,10h16.67c5.522,0,10-4.477,10-10 S419.959,233.468,414.437,233.468z"/>
-                                        </g></g>
-                                </svg>
-                            </h1>
-                            <h6 class="text-white">Буюртма элементлари</h6>
+
+            @can('hasAccess')
+                <!-- Order Item -->
+                <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <a href="{{ route('order-item.index') }}">
+                        <div class="card card-hover">
+                            <div class="box bg-info text-center">
+                                <h1 class="font-light text-white">
+                                    <svg height="40px" width="40px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 502 502" xml:space="preserve">
+                                        <g><g><polygon style="fill:#D1DCEB;" points="389.81,126.779 356.721,126.779 356.721,49 263.721,49 263.721,89 134.721,89 134.721,49 41.722,49 41.722,435 198.107,435 198.107,492 460.278,492 460.278,197.247 		"/><path style="fill:#4EC9DC;" d="M231.721,49V36.59c0-14.685-11.905-26.59-26.59-26.59h-11.819c-14.686,0-26.59,11.905-26.59,26.59 V49h-32v40h129V49H231.721z"/></g><polygon style="fill:#4EC9DC;" points="389.81,197.247 389.81,126.779 460.278,197.247 	"/><g>
+                                                <path d="M41.722,39c-5.522,0-10,4.477-10,10v386c0,5.523,4.478,10,10,10h146.386v47c0,5.523,4.478,10,10,10h262.171 c5.522,0,10-4.477,10-10V197.247c0-2.652-1.054-5.196-2.929-7.071l-70.468-70.468c-1.876-1.875-4.419-2.929-7.071-2.929h-23.089 V49c0-5.523-4.478-10-10-10h-115v-2.41c0-20.176-16.414-36.59-36.59-36.59h-11.819c-20.176,0-36.591,16.415-36.591,36.59V39 H41.722z M399.811,150.921l36.326,36.326h-36.326V150.921z M191.721,59c5.522,0,10-4.477,10-10s-4.478-10-10-10h-15v-2.41 c0-9.148,7.442-16.59,16.591-16.59h11.819c9.147,0,16.59,7.442,16.59,16.59V49c0,5.523,4.478,10,10,10h22v20h-109V59H191.721z M51.722,425V59h73v30c0,5.523,4.478,10,10,10h129c5.522,0,10-4.477,10-10V59h73v57.779H198.107c-5.522,0-10,4.477-10,10V425 H51.722z M208.107,136.779H379.81v60.468c0,5.523,4.478,10,10,10h60.468V482H208.107V136.779z"/>
+                                                <path d="M243.949,253.468h125.402c5.522,0,10-4.477,10-10s-4.478-10-10-10H243.949c-5.522,0-10,4.477-10,10 S238.427,253.468,243.949,253.468z"/>
+                                                <path d="M414.437,283.478H243.949c-5.522,0-10,4.477-10,10s4.478,10,10,10h170.487c5.522,0,10-4.477,10-10 S419.959,283.478,414.437,283.478z"/>
+                                                <path d="M414.437,333.487H243.949c-5.522,0-10,4.477-10,10s4.478,10,10,10h170.487c5.522,0,10-4.477,10-10 S419.959,333.487,414.437,333.487z"/>
+                                                <path d="M414.437,383.497H243.949c-5.522,0-10,4.477-10,10s4.478,10,10,10h170.487c5.522,0,10-4.477,10-10	S419.959,383.497,414.437,383.497z"/>
+                                                <path d="M414.437,233.468h-16.67c-5.522,0-10,4.477-10,10s4.478,10,10,10h16.67c5.522,0,10-4.477,10-10 S419.959,233.468,414.437,233.468z"/>
+                                            </g></g>
+                                    </svg>
+                                </h1>
+                                <h6 class="text-white">Буюртма элементлари</h6>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
+                    </a>
+                </div>
+            @endcan
+
             <!-- product -->
             <div class="col-md-6 col-lg-4 col-xlg-3">
                 <a href="{{ route('product.index') }}">
@@ -77,71 +81,75 @@
                     </div>
                 </a>
             </div>
-            <!-- Debt repayment -->
-            <div class="col-md-6 col-lg-2 col-xlg-3">
-                <a href="{{ route('expense-and-income.create', ['type' => \App\Models\ExpenseAndIncome::TYPE_DEBT]) }}">
-                    <div class="card card-hover">
-                        <div class="box bg-success text-center">
-                            <h1 class="font-light text-white">
-                                <i class="mdi mdi-book-variant"></i>
-                            </h1>
-                            <h6 class="text-white">Қарзни сўндириш</h6>
+
+            @can('hasAccess')
+                <!-- Debt repayment -->
+                <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <a href="{{ route('expense-and-income.create', ['type' => \App\Models\ExpenseAndIncome::TYPE_DEBT]) }}">
+                        <div class="card card-hover">
+                            <div class="box bg-success text-center">
+                                <h1 class="font-light text-white">
+                                    <i class="mdi mdi-book-variant"></i>
+                                </h1>
+                                <h6 class="text-white">Қарзни сўндириш</h6>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
-            <!-- Create income -->
-            <div class="col-md-6 col-lg-2 col-xlg-3">
-                <a href="{{ route('expense-and-income.create', ['type' => \App\Models\ExpenseAndIncome::TYPE_INCOME]) }}">
-                    <div class="card card-hover">
-                        <div class="box bg-primary text-center">
-                            <h1 class="font-light text-white">
-                                <i class="mdi mdi-book-plus"></i>
-                            </h1>
-                            <h6 class="text-white">Кирим яратиш</h6>
+                    </a>
+                </div>
+                <!-- Create income -->
+                <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <a href="{{ route('expense-and-income.create', ['type' => \App\Models\ExpenseAndIncome::TYPE_INCOME]) }}">
+                        <div class="card card-hover">
+                            <div class="box bg-primary text-center">
+                                <h1 class="font-light text-white">
+                                    <i class="mdi mdi-book-plus"></i>
+                                </h1>
+                                <h6 class="text-white">Кирим яратиш</h6>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
-            <!-- Create expense -->
-            <div class="col-md-6 col-lg-2 col-xlg-3">
-                <a href="{{ route('expense-and-income.create', ['type' => \App\Models\ExpenseAndIncome::TYPE_EXPENSE]) }}">
-                    <div class="card card-hover">
-                        <div class="box bg-danger text-center">
-                            <h1 class="font-light text-white">
-                                <i class="mdi mdi-book-minus"></i>
-                            </h1>
-                            <h6 class="text-white">Харажат яратиш</h6>
+                    </a>
+                </div>
+                <!-- Create expense -->
+                <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <a href="{{ route('expense-and-income.create', ['type' => \App\Models\ExpenseAndIncome::TYPE_EXPENSE]) }}">
+                        <div class="card card-hover">
+                            <div class="box bg-danger text-center">
+                                <h1 class="font-light text-white">
+                                    <i class="mdi mdi-book-minus"></i>
+                                </h1>
+                                <h6 class="text-white">Харажат яратиш</h6>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
-            <!-- Expense and income -->
-            <div class="col-md-6 col-lg-2 col-xlg-3">
-                <a href="{{ route('expense-and-income.index') }}">
-                    <div class="card card-hover">
-                        <div class="box bg-dark text-center">
-                            <h1 class="font-light text-white">
-                                <i class="mdi mdi-book-multiple"></i>
-                            </h1>
-                            <h6 class="text-white">Касса (кирим ва харажат)</h6>
+                    </a>
+                </div>
+                <!-- Expense and income -->
+                <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <a href="{{ route('expense-and-income.index') }}">
+                        <div class="card card-hover">
+                            <div class="box bg-dark text-center">
+                                <h1 class="font-light text-white">
+                                    <i class="mdi mdi-book-multiple"></i>
+                                </h1>
+                                <h6 class="text-white">Касса (кирим ва харажат)</h6>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
-            <!-- Profit and loss -->
-            <div class="col-md-6 col-lg-2 col-xlg-3">
-                <a href="{{ route('profit-and-loss.index') }}">
-                    <div class="card card-hover">
-                        <div class="box bg-secondary text-center">
-                            <h1 class="font-light text-white">
-                                <i class="mdi mdi-database-minus"></i>
-                            </h1>
-                            <h6 class="text-white">Фойда ва зарар</h6>
+                    </a>
+                </div>
+                <!-- Profit and loss -->
+                <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <a href="{{ route('profit-and-loss.index') }}">
+                        <div class="card card-hover">
+                            <div class="box bg-secondary text-center">
+                                <h1 class="font-light text-white">
+                                    <i class="mdi mdi-database-minus"></i>
+                                </h1>
+                                <h6 class="text-white">Фойда ва зарар</h6>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
+                    </a>
+                </div>
+            @endcan
+            
             <!-- User -->
             <div class="col-md-6 col-lg-2 col-xlg-3">
                 <a href="{{ route('user.index') }}">

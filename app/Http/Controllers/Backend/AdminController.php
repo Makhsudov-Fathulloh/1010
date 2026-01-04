@@ -18,12 +18,13 @@ class AdminController extends BaseController
         $lowProducts = ProductVariation::checkLowStock();
 
         if (!empty($lowProducts)) {
-            $message = "Минимал микдордаги махсулотлар: <br>";
+            $message = "Минимал микдордаги махсулотлар: ";
             $items = implode('<br>', $lowProducts);
             $fullMessage = $message . $items;
 
             if (auth()->check() && in_array(auth()->user()->role->title, ['Admin', 'Manager', 'Moderator', 'Developer'])) {
                 session()->flash('info', $fullMessage);
+                session()->flash('large_screen', true);
             }
         }
 

@@ -141,7 +141,7 @@ class ProductVariation extends Model
             ->map(function ($item) {
                 $count = \App\Helpers\CountHelper::format($item->count, $item->unit) ?? '';
 
-                return "{$item->code} - {$item->title} - {$count}";
+                return "{$item->title} - {$count}";
             })
             ->toArray();
     }

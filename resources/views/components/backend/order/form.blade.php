@@ -80,7 +80,7 @@
                                     @foreach($variations as $variation)
                                         <option value="{{ $variation->id }}" data-price="{{ $variation->price_uzs }}"
                                             {{ (int)$variationId === (int)$variation->id ? 'selected' : '' }}>
-                                            {!! $variation->code !!} — {!! $variation->product->title !!} → {!! $variation->title !!}
+                                            {!! $variation->title !!} — {!! $variation->product->title !!}
                                             ({{ number_format($variation->price_uzs, 0, '', ' ') }} сўм)
                                             [{{ \App\Helpers\CountHelper::format($variation->count, $variation->unit) }}]
                                         </option>
@@ -89,7 +89,7 @@
                             </div>
 
                             <div class="col-md-2">
-                                <input type="text" name="items[{{ $i }}][quantity]" class="form-control filter-numeric"
+                                <input type="text" name="items[{{ $i }}][quantity]" class="form-control filter-numeric-decimal"
                                        placeholder="Сони"
                                        value="{{ old("items.$i.quantity", is_array($item) ? ($item['quantity'] ?? 1) : ($item->quantity ?? 1)) }}"
                                        oninput="calculateTotal()" required>
@@ -177,7 +177,7 @@
         @foreach($variations as $variation)
                 optionsHtml += `<option value="{{ $variation->id }}" data-price="{{ $variation->price_uzs }}"
             {{--    ${selectedIds.includes('{{ $variation->id }}') ? 'display' : ''}>--}}
-                {!! $variation->code !!} — {!! $variation->product->title !!} → {!! $variation->title !!}
+                {!! $variation->title !!} — {!! $variation->product->title !!}
             ({{ number_format($variation->price_uzs, 0, '', ' ') }} сўм)
             [{{ \App\Helpers\CountHelper::format($variation->count, $variation->unit) }}]
             </option>`;
@@ -192,7 +192,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <input type="text" name="items[${itemIndex}][quantity]" class="form-control filter-numeric"
+                <input type="text" name="items[${itemIndex}][quantity]" class="form-control filter-numeric-decimal"
                        placeholder="Сони" value="1" oninput="calculateTotal()" required>
             </div>
             <div class="col-md-3">
@@ -257,10 +257,10 @@
             @foreach($variations as $variation)
                 allOptions.push({
                     id: '{{ $variation->id }}',
-                    code: '{{ $variation->code }}',
+                    // code: '{{ $variation->code }}',
                     title: '{{ $variation->product->title }} → {{ $variation->title }}',
                     price: '{{ $variation->price_uzs }}',
-                    text: `{!! $variation->code !!} — {!! $variation->product->title !!} → {!! $variation->title !!}
+                    text: `{!! $variation->title !!} — {!! $variation->product->title !!}
                     ({{ number_format($variation->price_uzs, 0, '', ' ') }} сўм)
                     @if ($variation->unit == StatusService::UNIT_PSC)
                         [{{ number_format($variation->count, 0, '', ' ') }} та]
