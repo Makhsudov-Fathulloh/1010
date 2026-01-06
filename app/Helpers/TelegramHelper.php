@@ -80,14 +80,23 @@ class TelegramHelper
             $count = $items->count();
             $show = $items->take(5);
             $lines = [];
+
+            $unitDecimals = match ($order->unit) {
+                StatusService::UNIT_PSC   => 0, // dona → 0
+                StatusService::UNIT_METER => 2, // metr → 0.00
+                StatusService::UNIT_KG    => 3, // kg → 0.000
+                default                  => 0,
+            };
+            $priceDecimals = $order->currency == StatusService::CURRENCY_USD ? 2 : 0;
+
             foreach ($show as $it) {
-                $pTitle = htmlspecialchars($it->title ?? ($it->productVariation->product->title ?? '—'), ENT_QUOTES, 'UTF-8');
-                $q = $it->quantity;
-                $pr = $fmt($it->price, $order->currency == StatusService::CURRENCY_USD ? 2 : 0);
+                $pTitle = htmlspecialchars($it->title ?? ($it->productVariation->title ?? '—'), ENT_QUOTES, 'UTF-8');
+                $q  = $fmt($it->quantity, $unitDecimals);
+                $pr = $fmt($it->price_uzs, $priceDecimals);
                 $lines[] = "• {$pTitle} — <code>{$q} x {$pr} {$currency}</code>";
             }
             if ($count > 5) {
-                $lines[] = "… + " . ($count - 5) . " ta mahsulot";
+                $lines[] = "… + " . ($count - 5) . " та махсулот";
             }
             $itemsText = implode("\n", $lines);
         }

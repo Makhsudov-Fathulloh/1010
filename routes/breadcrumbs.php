@@ -77,7 +77,6 @@ Breadcrumbs::for('product-variation.create.custom', function (BreadcrumbTrail $t
     $trail->parent('dashboard');
     $trail->push('Маҳсулот яратиш', route('product-variation.create.custom', $product_id));;
 });
-
 Breadcrumbs::for('product-variation.edit', function (BreadcrumbTrail $trail, $productVariation) {
     $trail->parent('product-variation.index');
     $trail->push($productVariation->title, route('product-variation.edit', $productVariation));
@@ -85,6 +84,43 @@ Breadcrumbs::for('product-variation.edit', function (BreadcrumbTrail $trail, $pr
 Breadcrumbs::for('product-variation.delete', function (BreadcrumbTrail $trail) {
     $trail->parent('dashboard');
     $trail->push('Маҳсулотни ўчириш', route('product-variation.delete'));
+});
+
+// Product Return
+Breadcrumbs::for('product-return.index', function (BreadcrumbTrail $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Қайтишлар', route('product-return.index'));
+});
+Breadcrumbs::for('product-return.show', function (BreadcrumbTrail $trail, $productReturn) {
+    $trail->parent('product-return.index');
+    $trail->push($productReturn->title, route('product-return.show', $productReturn));
+});
+Breadcrumbs::for('product-return.create', function (BreadcrumbTrail $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Махсулотни қайтариш', route('product-return.create'));
+});
+Breadcrumbs::for('product-return.edit', function (BreadcrumbTrail $trail, $productReturn) {
+    $trail->parent('product-return.index');
+    $trail->push($productReturn->title, route('product-return.edit', $productReturn));
+});
+Breadcrumbs::for('product-return.delete', function (BreadcrumbTrail $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Қайтишни ўчириш', route('product-return.delete'));
+});
+
+// Product Return Item
+Breadcrumbs::for('product-return-item.index', function (BreadcrumbTrail $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Қайтиш маҳсулотлари', route('product-return-item.index'));
+});
+Breadcrumbs::for('product-return-item.list', function (BreadcrumbTrail $trail, $product_return_id) {
+    $trail->parent('dashboard');
+    $productReturn = \App\Models\ProductReturn::findOrFail($product_return_id);
+    $trail->push($productReturn->title, route('product-return-item.list', $productReturn));
+});
+Breadcrumbs::for('product-return-item.show', function (BreadcrumbTrail $trail, $productReturnItem) {
+    $trail->parent('product-return-item.index');
+    $trail->push($productReturnItem->title, route('product-return-item.show', $productReturnItem));
 });
 
 // Log Product

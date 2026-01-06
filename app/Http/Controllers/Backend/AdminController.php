@@ -28,8 +28,8 @@ class AdminController extends BaseController
             }
         }
 
-        $userCount = User::where('role_id', \App\Models\Role::where('title', 'Клиент')->value('id'))->count();
-        $employeeCount = User::where('role_id', '!=', \App\Models\Role::where('title', 'Клиент')->value('id'))->count();
+        $userCount = User::where('role_id', \App\Models\Role::where('title', 'Client')->value('id'))->count();
+        $employeeCount = User::whereNotIn('role_id', \App\Models\Role::whereIn('title', ['Developer', 'Client'])->pluck('id'))->count();
 
         $exchangeRate = ExchangeRates::where('currency', 'USD')->value('rate');
 

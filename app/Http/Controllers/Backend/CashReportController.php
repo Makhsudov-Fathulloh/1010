@@ -203,8 +203,7 @@ class CashReportController extends Controller
         return back()->with('success', 'Барча валюта бўйича кунлик ҳисобот ёпилди!');
     }
 
-    private function
-    sendDailyReportToTelegram($report, $totals)
+    private function sendDailyReportToTelegram($report, $totals)
     {
         $users = User::whereHas('role', function ($query) {
             $query->whereIn('title', ['Developer', 'Admin', 'Manager']);

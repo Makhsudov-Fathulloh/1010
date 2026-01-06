@@ -5,16 +5,11 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class TelegramController extends Controller
 {
     public function webhook(Request $request)
     {
-        Log::info('✅ Telegram webhook келди:', $request->all());
-
-        // return response()->json(['ok' => true]);
-
         $data = $request->all();
         $message = $data['message'] ?? [];
         $chatId = $message['chat']['id'] ?? null;
@@ -22,7 +17,6 @@ class TelegramController extends Controller
         $contact = $message['contact'] ?? null;
 
         if (!$chatId) {
-            Log::warning('Telegram webhook: chat_id not found', $data);
             return response()->noContent();
         }
 
@@ -37,7 +31,7 @@ class TelegramController extends Controller
             $phone = $contact['phone_number'] ?? null;
 
             if (!$phone) {
-                $this->sendMessage($chatId, "❌ Telefon raqamingizni olishda xatolik yuz berdi.");
+                $this->sendMessage($chatId, "❌ Телефон рақамингизни олишда хатолик юз берди.");
                 return response()->noContent();
             }
 
@@ -54,7 +48,7 @@ class TelegramController extends Controller
             $adminChatIds = explode(',', env('TELEGRAM_ADMINS'));
 
             foreach ($adminChatIds as $adminChatId) {
-                $this->sendMessage($adminChatId, "📩 Yangi foydalanuvchi telefon yubordi:\n📱 Raqam: {$phone}\n🆔 ChatID: {$chatId}");
+                $this->sendMessage($adminChatId, "📩 Янги фойдаланувчи:\n📱 Рақам: {$phone}\n🆔 ChatID: {$chatId}");
             }
 
 
@@ -62,16 +56,14 @@ class TelegramController extends Controller
             $user = User::where('phone', $phone)->first();
 
             if (!$user) {
-                $this->sendMessage($chatId, "⚠️ Sizning raqamingiz tizimda topilmadi: {$phone}");
-                Log::info("Telegram phone not found: {$phone}");
+                $this->sendMessage($chatId, "⚠️ Сизнинг рақамингиз тизимда топилмади: {$phone}");
                 return response()->noContent();
             }
 
             // 🔹 Chat ID ni saqlash
             $user->update(['telegram_chat_id' => $chatId]);
 
-            $this->sendMessage($chatId, "✅ Assalamu alaykum, {$user->username}! Sizning akkauntingiz bot bilan bog‘landi.");
-            Log::info("Telegram chat_id saved for user {$user->id}: {$chatId}");
+            $this->sendMessage($chatId, "✅ Ассаламу алайкум, {$user->username}! Сизнинг аққаунтингиз bot билан боғланди.");
             return response()->noContent();
         }
 
@@ -106,11 +98,6 @@ class TelegramController extends Controller
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-
-        if ($response === false) {
-            Log::error('Telegram askPhoneNumber failed: ' . curl_error($ch));
-        }
 
         curl_close($ch);
     }
@@ -130,11 +117,6 @@ class TelegramController extends Controller
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-
-        if ($response === false) {
-            Log::error('Telegram sendMessage failed: ' . curl_error($ch));
-        }
 
         curl_close($ch);
     }
