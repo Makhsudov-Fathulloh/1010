@@ -57,16 +57,16 @@
                             $selectedVariation = $variations->firstWhere('id', $variationId);
 
                             // ✅ Narx qiymatini to‘g‘ri aniqlash (old > order item > model)
-                            $priceValue = old("items.$i.price_uzs");
+                            $priceValue = old("items.$i.price");
 
                             if (!$priceValue) {
                                 if (is_array($item)) {
-                                    $priceValue = $item['price_uzs'] ?? '';
+                                    $priceValue = $item['price'] ?? '';
                                 } else {
                                     if ($currentCurrency == StatusService::CURRENCY_UZS) {
-                                        $priceValue = number_format($item->price_uzs ?? 0, 0, '', ' ');
+                                        $priceValue = number_format($item->price ?? 0, 0, '', ' ');
                                     } else {
-                                        $priceValue = number_format($item->price_uzs ?? 0, 2, '.', ' ');
+                                        $priceValue = number_format($item->price ?? 0, 2, '.', ' ');
                                     }
                                 }
                             }
@@ -78,10 +78,10 @@
                                         onchange="updatePrice(this, {{ $i }})" required>
                                     <option value="">Маҳсулотни танланг</option>
                                     @foreach($variations as $variation)
-                                        <option value="{{ $variation->id }}" data-price="{{ $variation->price_uzs }}"
+                                        <option value="{{ $variation->id }}" data-price="{{ $variation->price }}"
                                             {{ (int)$variationId === (int)$variation->id ? 'selected' : '' }}>
                                             {!! $variation->title !!} — {!! $variation->product->title !!}
-                                            ({{ number_format($variation->price_uzs, 0, '', ' ') }} сўм)
+                                            ({{ number_format($variation->price, 0, '', ' ') }} сўм)
                                             [{{ \App\Helpers\CountHelper::format($variation->count, $variation->unit) }}]
                                         </option>
                                     @endforeach
@@ -96,11 +96,11 @@
                             </div>
 
                             <div class="col-md-3">
-                                <input type="text" name="items[{{ $i }}][price_uzs]"
+                                <input type="text" name="items[{{ $i }}][price]"
                                        class="form-control price-input"
                                        placeholder="Сотиш нархи"
                                        value="{{ $priceValue }}"
-                                       data-original-price="{{ $selectedVariation->price_uzs ?? 0 }}"
+                                       data-original-price="{{ $selectedVariation->price ?? 0 }}"
                                        oninput="validatePrice(this); calculateTotal()" required>
                             </div>
 
@@ -175,10 +175,10 @@
         let optionsHtml = `<option value="">Маҳсулотни танланг</option>`;
 
         @foreach($variations as $variation)
-                optionsHtml += `<option value="{{ $variation->id }}" data-price="{{ $variation->price_uzs }}"
+                optionsHtml += `<option value="{{ $variation->id }}" data-price="{{ $variation->price }}"
             {{--    ${selectedIds.includes('{{ $variation->id }}') ? 'display' : ''}>--}}
                 {!! $variation->title !!} — {!! $variation->product->title !!}
-            ({{ number_format($variation->price_uzs, 0, '', ' ') }} сўм)
+            ({{ number_format($variation->price, 0, '', ' ') }} сўм)
             [{{ \App\Helpers\CountHelper::format($variation->count, $variation->unit) }}]
             </option>`;
         @endforeach
@@ -196,7 +196,7 @@
                        placeholder="Сони" value="1" oninput="calculateTotal()" required>
             </div>
             <div class="col-md-3">
-                <input type="text" name="items[${itemIndex}][price_uzs]" class="form-control price-input"
+                <input type="text" name="items[${itemIndex}][price]" class="form-control price-input"
                        placeholder="Сотиш нархи" data-original-price="" value=""
                        oninput="validatePrice(this); calculateTotal()" required>
             </div>
@@ -259,9 +259,9 @@
                     id: '{{ $variation->id }}',
                     // code: '{{ $variation->code }}',
                     title: '{{ $variation->product->title }} → {{ $variation->title }}',
-                    price: '{{ $variation->price_uzs }}',
+                    price: '{{ $variation->price }}',
                     text: `{!! $variation->title !!} — {!! $variation->product->title !!}
-                    ({{ number_format($variation->price_uzs, 0, '', ' ') }} сўм)
+                    ({{ number_format($variation->price, 0, '', ' ') }} сўм)
                     @if ($variation->unit == StatusService::UNIT_PSC)
                         [{{ number_format($variation->count, 0, '', ' ') }} та]
                     @elseIf ($variation->unit == StatusService::UNIT_KG)
@@ -325,7 +325,7 @@
     function updatePrice(selectElement, index) {
         const selectedOption = selectElement.options[selectElement.selectedIndex];
         const priceSom = parseFloat(selectedOption.dataset.price) || 0;
-        const priceInput = document.querySelector(`input[name="items[${index}][price_uzs]"]`);
+        const priceInput = document.querySelector(`input[name="items[${index}][price]"]`);
         if (!priceInput) return;
 
         // faqat birinchi marta original narxni saqlaymiz

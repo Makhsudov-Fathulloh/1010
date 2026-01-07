@@ -1,13 +1,17 @@
-<x-backend.layouts.main title="{{ 'Қайтишлар' }}">
+<x-backend.layouts.main title="{{ 'Қайтарилган махсулотлар' }}">
 
     <div class="row">
         <div class="card shadow w-100">
             <div class="card-header">
                 <div class="row justify-content-start">
                     <div class="col-sm-12 col-md-auto text-start">
-                        <a href="{{ route('product-return.create') }}" class="btn btn-primary w-100 w-md-auto">
-                            {{ 'Маҳсулотни қайтариш' }}
-                        </a>
+                        @if(!$todayReport || $todayReport->isClose())
+                            <x-backend.action route="cash-report" :report="true" :todayReport="$todayReport"/>
+                        @elseif($todayReport->isOpen())
+                            <a href="{{ route('product-return.create') }}" class="btn btn-primary w-100 w-md-auto">
+                                {{ 'Қайтариш' }}
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

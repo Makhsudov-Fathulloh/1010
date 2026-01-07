@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\ProductReturn;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Backend\LogController;
@@ -13,6 +12,7 @@ use App\Http\Controllers\Backend\ExportController;
 use App\Http\Controllers\Backend\ProductController;
 use App\Http\Controllers\Backend\CategoryController;
 use App\Http\Controllers\Backend\TelegramController;
+use App\Http\Controllers\Backend\SupplierController;
 use App\Http\Controllers\Backend\OrderItemController;
 use App\Http\Controllers\Backend\WarehouseController;
 use App\Http\Controllers\Backend\CashReportController;
@@ -23,6 +23,7 @@ use App\Http\Controllers\Backend\ProductReturnItemController;
 use App\Http\Controllers\Backend\ProfitAndLossController;
 use App\Http\Controllers\Backend\ExpenseAndIncomeController;
 use App\Http\Controllers\Backend\ProductVariationController;
+use App\Http\Controllers\Backend\SupplierItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,6 +118,17 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('/open', [CashReportController::class, 'openDailyReport'])->name('cash-report.open')->middleware('role:Admin,Manager,Moderator,Developer');
         Route::post('/close', [CashReportController::class, 'closeDailyReport'])->name('cash-report.close')->middleware('role:Admin,Manager,Developer');
     });
+
+    Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index');
+    Route::get('/supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
+    Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
+    Route::post('/supplier/{supplier}/item', [SupplierController::class, 'storeItem'])->name('supplier.item.store');
+    Route::get('/supplier/{supplier}/edit', [SupplierController::class, 'edit'])->name('supplier.edit');
+    Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->name('supplier.update');
+    Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])->name('supplier.destroy');
+    Route::put('/supplier-item/{item}', [SupplierController::class, 'updateItem'])->name('supplier.item.update');
+    Route::delete('/supplier-item/{item}', [SupplierController::class, 'destroyItem'])->name('supplier.item.destroy');
+
 
     Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
     Route::post('/exchange-rates/update', [ExchangeRateController::class, 'update'])->name('exchange-rates.update');

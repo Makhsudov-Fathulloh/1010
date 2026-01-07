@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Models\User;
+use App\Models\CashReport;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ExchangeRates;
 use App\Models\ProductReturn;
+use App\Services\StatusService;
 use App\Models\ExpenseAndIncome;
 use App\Models\ProductVariation;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Search\ProductReturnSearch;
 
 class ProductReturnController extends Controller
@@ -37,6 +40,7 @@ class ProductReturnController extends Controller
 
         $expenses = ExpenseAndIncome::whereIn('id', ProductReturn::distinct()->pluck('expense_id'))->pluck('title', 'id');
         $users = User::whereIn('id', ProductReturn::distinct()->pluck('user_id'))->pluck('username', 'id');
+        $todayReport = CashReport::today()->first();
 
         $isFiltered = count($request->get('filters', [])) > 0;
 
@@ -52,34 +56,47 @@ class ProductReturnController extends Controller
             'returns',
             'expenses',
             'users',
+            'todayReport',
             'isFiltered',
             'productReturnCount'
         ));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(ProductReturn $productReturn)
     {
         return view('backend.product-return.show', compact('productReturn'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $variations = ProductVariation::with('product')->get();
+        if (($check = CashReport::checkCashReport()) !== true) {
+            return $check;
+        }
+
+        $variations = ProductVariation::with('product:id,title')
+            ->where('count', '>', 0)
+            ->get(['id', 'product_id', 'code', 'title', 'price', 'currency', 'count', 'unit']);
+
+        $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
+
+        // Narxlarni UZS ga konvertatsiya qilish
+        $variations->transform(function ($variation) use ($usdRate) {
+            if ($variation->currency === StatusService::CURRENCY_USD) {
+                $variation->price = $variation->price * $usdRate;
+                $variation->currency = StatusService::CURRENCY_UZS;
+            }
+            return $variation;
+        });
 
         return view('backend.product-return.create', compact('variations'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        if (($check = CashReport::checkCashReport()) !== true) {
+            return $check;
+        }
+
         $data = $request->validate([
             'items' => 'required|array|min:1',
             'items.*.product_variation_id' => 'required|exists:product_variation,id',
@@ -155,24 +172,38 @@ class ProductReturnController extends Controller
     }
 
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(ProductReturn $productReturn)
     {
+        if (($check = CashReport::checkCashReport()) !== true) {
+            return $check;
+        }
+
         $productReturn->load('items.variation.product');
 
-        $variations = ProductVariation::with('product')->get();
+        $variations = ProductVariation::with('product:id,title')
+            ->where('count', '>', 0)
+            ->get(['id', 'product_id', 'code', 'title', 'price', 'currency', 'count', 'unit']);
 
+        $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
+
+        // Narxlarni UZS ga konvertatsiya qilish
+        $variations->transform(function ($variation) use ($usdRate) {
+            if ($variation->currency === StatusService::CURRENCY_USD) {
+                $variation->price = $variation->price * $usdRate;
+                $variation->currency = StatusService::CURRENCY_UZS;
+            }
+            return $variation;
+        });
+        
         return view('backend.product-return.update', compact('productReturn', 'variations'));
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, ProductReturn $productReturn)
     {
+        if (($check = CashReport::checkCashReport()) !== true) {
+            return $check;
+        }
+
         $data = $request->validate([
             'items' => 'required|array|min:1',
             'items.*.product_variation_id' => 'required|exists:product_variation,id',
@@ -249,9 +280,6 @@ class ProductReturnController extends Controller
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(ProductReturn $productReturn)
     {
         DB::transaction(function () use ($productReturn) {

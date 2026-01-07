@@ -39,6 +39,7 @@ class ProductVariationController extends Controller
         $productIds = ProductVariation::distinct()->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->pluck('title', 'id');
 
+        $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
         $isFiltered = $request->has('filters') && count($request->input('filters', [])) > 0;
 
         if ($isFiltered) {
@@ -46,12 +47,22 @@ class ProductVariationController extends Controller
 
             $allCountUzs = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
             $allCountUsd = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
+
+            $uzsTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+            $usdTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+
             $totalPrice = (clone $filteredQuery)->whereYear('created_at', now()->year)->sum('total_price');
         } else {
             $allCountUzs = ProductVariation::where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
             $allCountUsd = ProductVariation::where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
+
+            $uzsTotal = ProductVariation::where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+            $usdTotal = ProductVariation::where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+
             $totalPrice = ProductVariation::whereYear('created_at', now()->year)->sum('total_price');
         }
+
+        $bodyPriceTotal = ($uzsTotal ?? 0) + (($usdTotal ?? 0) * $usdRate);
 
         $productVariations = $query->paginate(20)->withQueryString();
 
@@ -61,6 +72,7 @@ class ProductVariationController extends Controller
             'isFiltered',
             'allCountUzs',
             'allCountUsd',
+            'bodyPriceTotal',
             'totalPrice'
         ));
     }
@@ -87,6 +99,7 @@ class ProductVariationController extends Controller
             }
         }
 
+        $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
         $isFiltered = $request->has('filters') && count($request->input('filters', [])) > 0;
 
         if ($isFiltered) {
@@ -94,12 +107,22 @@ class ProductVariationController extends Controller
 
             $allCountUzs = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
             $allCountUsd = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
+
+            $uzsTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+            $usdTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+
             $totalPrice = (clone $filteredQuery)->whereYear('created_at', now()->year)->sum('total_price');
         } else {
-            $allCountUzs = ProductVariation::where('currency', StatusService::CURRENCY_UZS)->where('product_id', $product_id)->whereYear('created_at', now()->year)->count();
-            $allCountUsd = ProductVariation::where('currency', StatusService::CURRENCY_USD)->where('product_id', $product_id)->whereYear('created_at', now()->year)->count();
-            $totalPrice = ProductVariation::where('product_id', $product_id)->whereYear('created_at', now()->year)->sum('total_price');
+            $allCountUzs = ProductVariation::where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
+            $allCountUsd = ProductVariation::where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
+
+            $uzsTotal = ProductVariation::where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+            $usdTotal = ProductVariation::where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+
+            $totalPrice = ProductVariation::whereYear('created_at', now()->year)->sum('total_price');
         }
+
+        $bodyPriceTotal = ($uzsTotal ?? 0) + (($usdTotal ?? 0) * $usdRate);
 
         $productVariations = $query->paginate(20)->withQueryString();
 
@@ -109,6 +132,7 @@ class ProductVariationController extends Controller
             'isFiltered',
             'allCountUzs',
             'allCountUsd',
+            'bodyPriceTotal',
             'totalPrice'
         ));
     }

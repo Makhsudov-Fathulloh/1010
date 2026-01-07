@@ -89,7 +89,7 @@ Breadcrumbs::for('product-variation.delete', function (BreadcrumbTrail $trail) {
 // Product Return
 Breadcrumbs::for('product-return.index', function (BreadcrumbTrail $trail) {
     $trail->parent('dashboard');
-    $trail->push('Қайтишлар', route('product-return.index'));
+    $trail->push('Қайтарилган махсулотлар', route('product-return.index'));
 });
 Breadcrumbs::for('product-return.show', function (BreadcrumbTrail $trail, $productReturn) {
     $trail->parent('product-return.index');
@@ -97,7 +97,7 @@ Breadcrumbs::for('product-return.show', function (BreadcrumbTrail $trail, $produ
 });
 Breadcrumbs::for('product-return.create', function (BreadcrumbTrail $trail) {
     $trail->parent('dashboard');
-    $trail->push('Махсулотни қайтариш', route('product-return.create'));
+    $trail->push('Махсулот қайтариш', route('product-return.create'));
 });
 Breadcrumbs::for('product-return.edit', function (BreadcrumbTrail $trail, $productReturn) {
     $trail->parent('product-return.index');
@@ -120,7 +120,7 @@ Breadcrumbs::for('product-return-item.list', function (BreadcrumbTrail $trail, $
 });
 Breadcrumbs::for('product-return-item.show', function (BreadcrumbTrail $trail, $productReturnItem) {
     $trail->parent('product-return-item.index');
-    $trail->push($productReturnItem->title, route('product-return-item.show', $productReturnItem));
+    $trail->push($productReturnItem->variation->title, route('product-return-item.show', $productReturnItem));
 });
 
 // Log Product
@@ -129,6 +129,18 @@ Breadcrumbs::for('log.product', function (BreadcrumbTrail $trail) {
     $trail->push('Маҳсулотлар(кириш)', route('log.product'));
 });
 
+// Supplier
+Breadcrumbs::for('supplier.index', function (BreadcrumbTrail $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Маҳсулотлар(кириш)', route('supplier.index'));
+});
+
+// Supplier
+Breadcrumbs::for('supplier.show', function (BreadcrumbTrail $trail, $supplier) {
+    $trail->parent('dashboard');
+    $trail->push('Фирмалар', route('supplier.index'));
+    $trail->push($supplier->title, route('supplier.show', $supplier->id));
+});
 
 // Organization
 Breadcrumbs::for('organization.index', function (BreadcrumbTrail $trail) {

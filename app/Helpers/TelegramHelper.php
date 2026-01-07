@@ -92,7 +92,7 @@ class TelegramHelper
             foreach ($show as $it) {
                 $pTitle = htmlspecialchars($it->title ?? ($it->productVariation->title ?? '—'), ENT_QUOTES, 'UTF-8');
                 $q  = $fmt($it->quantity, $unitDecimals);
-                $pr = $fmt($it->price_uzs, $priceDecimals);
+                $pr = $fmt($it->price, $priceDecimals);
                 $lines[] = "• {$pTitle} — <code>{$q} x {$pr} {$currency}</code>";
             }
             if ($count > 5) {

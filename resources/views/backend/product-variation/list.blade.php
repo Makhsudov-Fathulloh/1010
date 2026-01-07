@@ -264,7 +264,8 @@
 
                     .card-stats.uzs { background: linear-gradient(135deg, #00b894 30%, #2ecc71 90%); border-left: 5px solid #00d68f; }
                     .card-stats.usd { background: linear-gradient(135deg, #0984e3 30%, #0984e3 90%); border-left: 5px solid #00a8ff; }
-                    .card-stats.total { background: linear-gradient(135deg, #6c5ce7 30%, #5a4fd4 90%); border-left: 5px solid #8e76ff; }
+                    .card-stats.total-body-price { background: linear-gradient(135deg, #6c5ce7 30%, #5a4fd4 90%); border-left: 5px solid #8e76ff; }
+                    .card-stats.total-price { background: linear-gradient(135deg, #fd79a8 30%, #e84393 90%); border-left: 5px solid #ff6b81; }
 
                     .card-stats h5 {
                         font-weight: 700;
@@ -305,10 +306,21 @@
                         </div>
                     </div>
 
-                    <!-- TotalPrice -->
-                    <div class="card-stats total">
+                    <!-- TotalBodyPrice -->
+                    <div class="card-stats total-body-price">
                         <div class="w-100">
-                            <p>Умумий сумма</p>
+                            <p>Умумий сумма (Тан нарх)</p>
+                            <h5><strong>{{ number_format($bodyPriceTotal ?? 0, 0, '', ' ') }} сўм</strong></h5>
+                        </div>
+                        <div>
+                            <i class="bi bi-currency-euro"></i>
+                        </div>
+                    </div>
+
+                     <!-- TotalPrice -->
+                    <div class="card-stats total-price">
+                        <div class="w-100">
+                            <p>Умумий сумма (Сотиш нархи)</p>
                             <h5><strong>{{ number_format($totalPrice ?? 0, 0, '', ' ') }} сўм</strong></h5>
                         </div>
                         <div>
