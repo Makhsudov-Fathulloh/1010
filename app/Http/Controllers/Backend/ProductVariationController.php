@@ -48,8 +48,8 @@ class ProductVariationController extends Controller
             $allCountUzs = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
             $allCountUsd = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
 
-            $uzsTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
-            $usdTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+            $uzsTotal = (clone $filteredQuery)->reorder()->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum(DB::raw('body_price * count'));
+            $usdTotal = (clone $filteredQuery)->reorder()->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum(DB::raw('body_price * count'));
 
             $totalPrice = (clone $filteredQuery)->whereYear('created_at', now()->year)->sum('total_price');
         } else {
@@ -108,8 +108,8 @@ class ProductVariationController extends Controller
             $allCountUzs = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
             $allCountUsd = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
 
-            $uzsTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
-            $usdTotal = (clone $filteredQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->selectRaw('SUM(body_price * count) as total')->value('total');
+            $uzsTotal = (clone $filteredQuery)->reorder()->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum(DB::raw('body_price * count'));
+            $usdTotal = (clone $filteredQuery)->reorder()->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum(DB::raw('body_price * count'));
 
             $totalPrice = (clone $filteredQuery)->whereYear('created_at', now()->year)->sum('total_price');
         } else {
