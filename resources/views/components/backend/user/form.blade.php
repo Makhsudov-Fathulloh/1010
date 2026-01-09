@@ -145,17 +145,24 @@
                             </div>
                         @endif
 
-                        @if(\Illuminate\Support\Facades\Auth::user()->role->title == 'Admin')
+                        @if(Auth::user()->role->title == 'Admin')
                             <div class="mb-3 mt-3">
-                                <label for="role_id">Даража</label>
+                                <label>Даража</label>
                                 <select class="form-control select2" name="role_id">
-                                    <option value="{{ $clientRoleId }}">
-                                        {{ $clientRole ?? 'Client' }}
-                                    </option>
+
+                                    {{-- AGAR EDIT QILINAYOTGAN USER ADMIN BO'LSA --}}
+                                    @if($user->exists && $user->role->title === 'Admin')
+                                        <option value="{{ $user->role_id }}" selected>
+                                            {{ $user->role->title }}
+                                        </option>
+                                    @endif
+
+                                    <option value="{{ $clientRoleId }}">Client</option>
+
                                     @foreach($rolesAdmin as $id => $name)
                                         @continue($id == $clientRoleId)
                                         <option value="{{ $id }}"
-                                            {{ old('role_id', $user->role_id ?? $clientRoleId) == $id ? 'selected' : '' }}>
+                                            {{ old('role_id', $user->role_id) == $id ? 'selected' : '' }}>
                                             {{ $name }}
                                         </option>
                                     @endforeach
@@ -163,17 +170,24 @@
                             </div>
                         @endif
 
-                        @if(\Illuminate\Support\Facades\Auth::user()->role->title == 'Manager')
+                       @if(Auth::user()->role->title == 'Manager')
                             <div class="mb-3 mt-3">
-                                <label for="role_id">Даража</label>
+                                <label>Даража</label>
                                 <select class="form-control select2" name="role_id">
-                                    <option value="{{ $clientRoleId }}">
-                                        {{ $clientRole ?? 'Client' }}
-                                    </option>
+
+                                    {{-- AGAR EDIT QILINAYOTGAN USER MANAGER BO'LSA --}}
+                                    @if($user->exists && $user->role->title === 'Manager')
+                                        <option value="{{ $user->role_id }}" selected>
+                                            {{ $user->role->title }}
+                                        </option>
+                                    @endif
+
+                                    <option value="{{ $clientRoleId }}">Client</option>
+
                                     @foreach($roles as $id => $name)
                                         @continue($id == $clientRoleId)
                                         <option value="{{ $id }}"
-                                            {{ old('role_id', $user->role_id ?? $clientRoleId) == $id ? 'selected' : '' }}>
+                                            {{ old('role_id', $user->role_id) == $id ? 'selected' : '' }}>
                                             {{ $name }}
                                         </option>
                                     @endforeach

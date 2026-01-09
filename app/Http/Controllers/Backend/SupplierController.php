@@ -149,7 +149,7 @@ class SupplierController extends Controller
 
             // Xarajatlar jadvaliga yozish
             $expense = ExpenseAndIncome::create([
-                'title'        => "Фирмага тўлов #" . (ExpenseAndIncome::max('id') + 1),
+                'title'        => "Фирмага тўлов #" . $mainItem->id . " | " . $supplier->title,
                 'amount'       => $amountInUzs,
                 'currency'     => StatusService::CURRENCY_UZS,
                 'type'         => ExpenseAndIncome::TYPE_EXPENSE,
@@ -210,7 +210,7 @@ class SupplierController extends Controller
             } else {
                 // MAVJUD BO'LMASA - yangi yaratamiz
                 $newExpense = ExpenseAndIncome::create([
-                    'title'        => "Фирмага тўлов #" . $item->id . $item->suplier->title,
+                    'title'        => "Фирмага тўлов янгиланди#" . $item->suplier->id . " | " . $item->suplier->title,
                     'amount'       => $newAmountInUzs,
                     'currency'     => StatusService::CURRENCY_UZS,
                     'type'         => ExpenseAndIncome::TYPE_EXPENSE,

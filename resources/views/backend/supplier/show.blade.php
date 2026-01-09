@@ -85,7 +85,8 @@
                 <table class="table table-hover align-middle mb-0 text-center">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4 small fw-bold">Сана</th>
+                            <th class="ps-4 small fw-bold">№</th>
+                            <th class="small fw-bold">Сана</th>
                             <th class="small fw-bold">Тури</th>
                             <th class="small fw-bold">Сумма</th>
                             <th class="small fw-bold">Қурс</th>
@@ -97,6 +98,7 @@
                     <tbody>
                         @forelse($items as $item)
                         <tr>
+                            <td class="small">{{ $item->id }}</td>
                             <td class="small">{{ $item->created_at->format('d.m.Y H:i') }}</td>
                             <td>
                                 <span class="badge {{ $item->type == 1 ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success' }} px-3 rounded-pill">
