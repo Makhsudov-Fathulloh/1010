@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Backend;
 use App\Models\Supplier;
 use App\Models\SupplierItem;
 use Illuminate\Http\Request;
+use App\Models\ExchangeRates;
+use App\Services\StatusService;
+use App\Models\ExpenseAndIncome;
 use App\Http\Controllers\Controller;
 
 class SupplierController extends Controller
@@ -88,11 +91,11 @@ class SupplierController extends Controller
                 'amount'      => $data['amount'],
                 'currency'    => $data['currency'],
                 'rate'        => $data['rate'],
-                'description' => 'Boshlang‘ich balans',
+                'description' => 'Бошланғич баланс',
             ]);
         }
 
-        return back()->with('success', 'Yangi firma qo‘shildi');
+        return back()->with('success', 'Фирма яратилди!');
     }
 
     public function update(Request $request, Supplier $supplier)
@@ -106,7 +109,7 @@ class SupplierController extends Controller
 
         $supplier->update($data);
 
-        return back()->with('success', 'Firma maʼlumotlari yangilandi');
+        return back()->with('success', 'Фирма янгиланди!');
     }
 
     public function storeItem(Request $request, Supplier $supplier)
@@ -120,27 +123,57 @@ class SupplierController extends Controller
             'paid_amount' => 'nullable|numeric|min:0'
         ]);
 
-        // 1. Asosiy yukni saqlash
-        $supplier->items()->create([
-            'type' => $data['type'],
-            'currency' => $data['currency'],
-            'amount' => $data['amount'],
-            'rate' => $data['rate'],
+        // 1. Asosiy yukni yoki to'lovni saqlash
+        $mainItem = $supplier->items()->create([
+            'type'        => $data['type'],
+            'currency'    => $data['currency'],
+            'amount'      => $data['amount'],
+            'rate'        => $data['rate'],
             'description' => $data['description'],
         ]);
 
-        // 2. Agar yuk bo'lsa va to'lov ham qilingan bo'lsa, alohida to'lov qatorini ham qo'shamiz
-        if ($request->type == 1 && $request->filled('paid_amount') && $request->paid_amount > 0) {
-            $supplier->items()->create([
-                'type' => 2, // To'lov
-                'currency' => $data['currency'],
-                'amount' => $request->paid_amount,
-                'rate' => $data['rate'],
-                'description' => "Yuk uchun to'lov: " . ($data['description'] ?? ''),
+        // 2. Agar to'lov bo'lsa (type=2) YOKI yuk bilan birga to'lov qilingan bo'lsa
+        if ($data['type'] == SupplierItem::TYPE_PAYMENT || ($data['type'] == 1 && $request->filled('paid_amount') && $request->paid_amount > 0)) {
+
+            $paymentAmount = ($data['type'] == SupplierItem::TYPE_PAYMENT) ? $data['amount'] : $request->paid_amount;
+            $currency = $data['currency'];
+            $rate = $data['rate'];
+
+            // Valyutani hisoblash (Faqat UZS da saqlash uchun)
+            $amountInUzs = $paymentAmount;
+            if ($currency == StatusService::CURRENCY_USD) {
+                // Agar kurs requestda bo'lsa shuni olamiz, bo'lmasa bazadan
+                $usdRate = $rate ?: ExchangeRates::where('currency', 'USD')->value('rate');
+                $amountInUzs = $paymentAmount * $usdRate;
+            }
+
+            // Xarajatlar jadvaliga yozish
+            $expense = ExpenseAndIncome::create([
+                'title'        => "Фирмага тўлов #" . (ExpenseAndIncome::max('id') + 1),
+                'amount'       => $amountInUzs,
+                'currency'     => StatusService::CURRENCY_UZS,
+                'type'         => ExpenseAndIncome::TYPE_EXPENSE,
+                'type_payment' => ExpenseAndIncome::TYPE_PAYMENT_CASH,
+                'user_id'      => auth()->id(),
             ]);
+
+            // Agar yuk ichida to'lov qilingan bo'lsa, yangi SupplierItem yaratamiz
+            if ($data['type'] == 1) {
+                $supplier->items()->create([
+                    'type'        => SupplierItem::TYPE_PAYMENT,
+                    'currency'    => $currency,
+                    'amount'      => $paymentAmount,
+                    'rate'        => $rate,
+                    'expense_id'  => $expense->id, // Expense ID ni bog'laymiz
+                    'description' => "Yuk uchun to'lov: " . ($data['description'] ?? ''),
+                ]);
+            } else {
+                // Agar to'g'ridan-to'g'ri to'lov bo'lsa, yaratilgan mainItem ni yangilaymiz
+                $mainItem->update(['expense_id' => $expense->id]);
+            }
         }
 
-        return back()->with('success', 'Amaliyot saqlandi!');
+        return back()->with('success', 'Aмалиёт сақланди!');
     }
 
     public function updateItem(Request $request, SupplierItem $item)
@@ -153,14 +186,59 @@ class SupplierController extends Controller
             'description' => 'nullable|string|max:500'
         ]);
 
-        $item->update($data);
+        // 1. Yangi summani har doim UZS (so'm) ga o'girib olamiz
+        // Chunki kassa (ExpenseAndIncome) asosan so'mda yuritiladi deb hisoblaymiz
+        $newAmountInUzs = $data['amount'];
+        if ($data['currency'] == StatusService::CURRENCY_USD) {
+            $newAmountInUzs = $data['amount'] * $data['rate'];
+        }
 
-        return back()->with('success', 'Amaliyot muvaffaqiyatli yangilandi!');
+        $currentExpenseId = $item->expense_id;
+
+        // 2. Kassa (Expense) mantiqi
+        if ($data['type'] == SupplierItem::TYPE_PAYMENT) {
+
+            $expense = ExpenseAndIncome::find($item->expense_id);
+
+            if ($expense) {
+                // MAVJUD BO'LSA - barcha parametrlarini yangilaymiz
+                $expense->update([
+                    'amount'      => $newAmountInUzs,
+                    'user_id'     => auth()->id(),
+                    'description' => "Янгиланди (" . ($data['currency'] == StatusService::CURRENCY_UZS ? 'сўм' : '$') . "): " . ($data['description'] ?? ''),
+                ]);
+            } else {
+                // MAVJUD BO'LMASA - yangi yaratamiz
+                $newExpense = ExpenseAndIncome::create([
+                    'title'        => "Фирмага тўлов #" . $item->id . $item->suplier->title,
+                    'amount'       => $newAmountInUzs,
+                    'currency'     => StatusService::CURRENCY_UZS,
+                    'type'         => ExpenseAndIncome::TYPE_EXPENSE,
+                    'type_payment' => ExpenseAndIncome::TYPE_PAYMENT_CASH,
+                    'user_id'      => auth()->id(),
+                    'description'  => $data['description']
+                ]);
+                $currentExpenseId = $newExpense->id;
+            }
+        } else {
+            // Agar "To'lov" (Payment) turidan "Yuk" (Invoice) turiga o'zgarsa, kassadagi chiqimni o'chiramiz
+            if ($item->expense_id) {
+                ExpenseAndIncome::where('id', $item->expense_id)->delete();
+            }
+            $currentExpenseId = null;
+        }
+
+        // 3. SupplierItem'ni yangilaymiz
+        $item->update(array_merge($data, [
+            'expense_id' => $currentExpenseId
+        ]));
+
+        return back()->with('success', 'Амалиёт ва касса харажати янгиланди!');
     }
 
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
-        return redirect()->route('supplier.index')->with('success', 'Firma o\'chirildi');
+        return redirect()->route('supplier.index')->with('success', 'Фирма ўчирилди');
     }
 }

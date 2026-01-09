@@ -1,3 +1,7 @@
+@php
+    use App\Helpers\PriceHelper;
+@endphp
+
 <x-backend.layouts.main title="Фирма: {{ $supplier->title }}">
     <div class="container-fluid">
         <div class="row g-3 mb-4">
@@ -7,13 +11,13 @@
                 <div class="card shadow-sm border-0 border-top border-4 {{ $debt > 0 ? 'border-danger' : 'border-success' }}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="small fw-bold text-muted text-uppercase">Valyuta: {{ \App\Services\StatusService::getCurrency()[$bal->currency] }}</span>
+                            <span class="small fw-bold text-muted">Валюта: {{ \App\Services\StatusService::getCurrency()[$bal->currency] }}</span>
                             <i class="fa {{ $debt > 0 ? 'fa-arrow-up text-danger' : 'fa-check text-success' }}"></i>
                         </div>
-                        <h3 class="fw-bold mb-1">{{ number_format($debt, 2) }}</h3>
+                        <h3 class="fw-bold mb-1">{{ PriceHelper::format($debt, $bal->currency, false) }}</h3>
                         <div class="d-flex justify-content-between small text-muted">
-                            <span>Yuk: {{ number_format($bal->total_yuk, 1) }}</span>
-                            <span>To'lov: {{ number_format($bal->total_tolov, 1) }}</span>
+                            <span>Юк: {{ PriceHelper::format($bal->total_yuk, $bal->currency, false) }}</span>
+                            <span>Тўлов: {{ PriceHelper::format($bal->total_tolov, $bal->currency, false) }}</span>
                         </div>
                     </div>
                 </div>
@@ -29,14 +33,14 @@
                 <form action="{{ route('supplier.item.store', $supplier->id) }}" method="POST" class="row g-3">
                     @csrf
                     <div class="col-md-2">
-                        <label class="small fw-bold">Aмалиёт тури</label>
+                        <label class="small fw-bold">Aмалиёт тури:</label>
                         <select name="type" class="form-select border-0 shadow-sm" required>
                             <option value="1">📦 Юк келди (-)</option>
                             <option value="2">💸 Тўлов қилинди (+)</option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="small fw-bold">Валюта</label>
+                        <label class="small fw-bold">Валюта:</label>
                         <select name="currency" id="currency" class="form-select border-0 shadow-sm" required>
                             @foreach(\App\Services\StatusService::getCurrency() as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
@@ -44,15 +48,15 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="small fw-bold">Сумма</label>
+                        <label class="small fw-bold">Сумма:</label>
                         <input type="number" name="amount" step="0.001" class="form-control border-0 shadow-sm" placeholder="0.00" required>
                     </div>
                     <div class="col-md-2">
-                        <label class="small fw-bold">Курс</label>
+                        <label class="small fw-bold">Курс:</label>
                         <input type="number" name="rate" id="rate" step="0.01" class="form-control border-0 shadow-sm" value="1" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="small fw-bold">Изоҳ</label>
+                        <label class="small fw-bold">Изоҳ:</label>
                         <input type="text" name="description" class="form-control border-0 shadow-sm" placeholder="">
                     </div>
                     <div class="col-md-1 d-flex align-items-end">
@@ -72,8 +76,8 @@
                         <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm border-secondary-subtle shadow-sm">
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-sm btn-dark px-3">Filtrlash</button>
-                        <a href="{{ route('supplier.show', $supplier->id) }}" class="btn btn-sm btn-outline-secondary px-3">Tozalash</a>
+                        <button type="submit" class="btn btn-sm btn-dark px-3">Филтрлаш</button>
+                        <a href="{{ route('supplier.show', $supplier->id) }}" class="btn btn-sm btn-outline-secondary px-3">Тозалаш</a>
                     </div>
                 </form>
             </div>
@@ -81,28 +85,28 @@
                 <table class="table table-hover align-middle mb-0 text-center">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4 text-start small">Сана</th>
-                            <th class="small">Тури</th>
-                            <th class="small">Валюта</th>
-                            <th class="small">Сумма</th>
-                            <th class="small">Курс</th>
-                            <th class="text-start small">Изоҳ</th>
-                            <th class="pe-4 small">Aмаллар</th>
+                            <th class="ps-4 small fw-bold">Сана</th>
+                            <th class="small fw-bold">Тури</th>
+                            <th class="small fw-bold">Сумма</th>
+                            <th class="small fw-bold">Қурс</th>
+                            <th class="small fw-bold">Изоҳ</th>
+                            <th class="small fw-bold">Ҳаражат рақами</th>
+                            <th class="pe-4 small fw-bold">Aмаллар</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($items as $item)
                         <tr>
-                            <td class="ps-4 text-start text-muted small">{{ $item->created_at->format('d.m.Y H:i') }}</td>
+                            <td class="small">{{ $item->created_at->format('d.m.Y H:i') }}</td>
                             <td>
                                 <span class="badge {{ $item->type == 1 ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success' }} px-3 rounded-pill">
                                     {{ $item->type == 1 ? 'Юк келди' : 'Тўлов қилинди' }}
                                 </span>
                             </td>
-                            <td class="fw-bold">{{ \App\Services\StatusService::getCurrency()[$item->currency] }}</td>
-                            <td class="fw-bold fs-6">{{ number_format($item->amount, 2) }}</td>
-                            <td class="text-muted small">{{ number_format($item->rate, 2) }}</td>
-                            <td class="text-start small text-secondary">{{ $item->description }}</td>
+                            <td class="fw-bold">{{ PriceHelper::format($item->amount, $item->currency) }}</td>
+                            <td class="text-muted small">{{ PriceHelper::format($item->rate, $item->currency, false) }}</td>
+                            <td class="small">{{ $item->description }}</td>
+                            <td class="small">{{ optional($item->expense)->title ?? '-' }}</td>
                             <td class="pe-4">
                                 <div class="d-flex justify-content-center gap-1">
                                     <button class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#editItemModal{{ $item->id }}">
@@ -118,43 +122,43 @@
                                     <form action="{{ route('supplier.item.update', $item->id) }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="modal-header bg-light">
-                                            <h6 class="modal-title fw-bold">Amaliyotni tahrirlash #{{ $item->id }}</h6>
+                                            <h6 class="modal-title fw-bold">Aмалиётни таҳрирлаш #{{ $item->id }}</h6>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body p-4 text-start">
                                             <div class="row g-3">
                                                 <div class="col-6">
-                                                    <label class="small fw-bold">Amaliyot turi</label>
+                                                    <label class="small fw-bold">Aмалиёт тури:</label>
                                                     <select name="type" class="form-select border-0 shadow-sm">
-                                                        <option value="1" {{ $item->type == 1 ? 'selected' : '' }}>Yuk keldi</option>
-                                                        <option value="2" {{ $item->type == 2 ? 'selected' : '' }}>To'lov</option>
+                                                        <option value="1" {{ $item->type == 1 ? 'selected' : '' }}>Юк келди</option>
+                                                        <option value="2" {{ $item->type == 2 ? 'selected' : '' }}>Тўлов қилинди</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-6">
-                                                    <label class="small fw-bold">Valyuta</label>
-                                                    <select name="currency" class="form-select border-0 shadow-sm">
+                                                    <label class="small fw-bold">Валюта:</label>
+                                                    <select name="currency" class="form-select border-0 shadow-sm js-currency">
                                                         @foreach(\App\Services\StatusService::getCurrency() as $id => $name)
                                                             <option value="{{ $id }}" {{ $item->currency == $id ? 'selected' : '' }}>{{ $name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="col-6">
-                                                    <label class="small fw-bold">Summa</label>
+                                                    <label class="small fw-bold">Сумма:</label>
                                                     <input type="number" name="amount" step="0.001" class="form-control border-0 shadow-sm" value="{{ $item->amount }}" required>
                                                 </div>
                                                 <div class="col-6">
-                                                    <label class="small fw-bold">Kurs (UZS)</label>
-                                                    <input type="number" name="rate" step="0.01" class="form-control border-0 shadow-sm" value="{{ $item->rate }}" required>
+                                                    <label class="small fw-bold">Курс:</label>
+                                                    <input type="number" name="rate" step="0.001" class="form-control border-0 shadow-sm js-rate" value="{{ $item->rate }}" required>
                                                 </div>
                                                 <div class="col-12">
-                                                    <label class="small fw-bold">Izoh</label>
+                                                    <label class="small fw-bold">Изох:</label>
                                                     <input type="text" name="description" class="form-control border-0 shadow-sm" value="{{ $item->description }}">
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="modal-footer border-0">
-                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Yopish</button>
-                                            <button type="submit" class="btn btn-primary px-4 shadow-sm">Yangilash</button>
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Ёпиш</button>
+                                            <button type="submit" class="btn btn-primary px-4 shadow-sm">Янгилаш</button>
                                         </div>
                                     </form>
                                 </div>
@@ -162,7 +166,7 @@
                         </div>
                         @empty
                         <tr>
-                            <td colspan="7" class="py-5 text-muted">Hozircha amaliyotlar mavjud emas.</td>
+                            <td colspan="7" class="py-5 text-muted">Ҳозирча амалиётлар мавжуд емас.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -191,6 +195,36 @@
                 rateInput.value = 1;
                 rateInput.readOnly = false;
             }
+        });
+
+        function handleCurrencyChange(currencySelect) {
+            const modal = currencySelect.closest('.modal, form');
+            const rateInput = modal.querySelector('.js-rate');
+
+            if (!rateInput) return;
+
+            if (currencySelect.value == USD_ID) {
+                rateInput.value = usdRate;
+                rateInput.readOnly = true;
+            } else {
+                rateInput.value = 1;
+                rateInput.readOnly = false;
+            }
+        }
+
+        // Yangi amal (asosiy forma)
+        document.getElementById('currency')?.addEventListener('change', function () {
+            handleCurrencyChange(this);
+        });
+
+        // Modal’lar uchun
+        document.querySelectorAll('.js-currency').forEach(select => {
+            select.addEventListener('change', function () {
+                handleCurrencyChange(this);
+            });
+
+            // modal ochilganda ham to‘g‘ri qiymat qo‘yish
+            handleCurrencyChange(select);
         });
     </script>
 
