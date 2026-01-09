@@ -57,6 +57,10 @@
                     <th>Фойдаланувчи</th>
                     <td>{{ $user->username ?? ' ' }}</td>
                 </tr>
+                 <tr>
+                    <th>E-mail</th>
+                    <td>{{ $user->email ?? ' ' }}</td>
+                </tr>
                 <tr>
                     <th>Телефон</th>
                     <td>{{ $user->phone }}</td>
