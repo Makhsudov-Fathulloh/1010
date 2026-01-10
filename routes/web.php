@@ -119,16 +119,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::post('/close', [CashReportController::class, 'closeDailyReport'])->name('cash-report.close')->middleware('role:Admin,Manager,Developer');
     });
 
-    Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index');
-    Route::get('/supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
-    Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
-    Route::post('/supplier/{supplier}/item', [SupplierController::class, 'storeItem'])->name('supplier.item.store');
-    Route::get('/supplier/{supplier}/edit', [SupplierController::class, 'edit'])->name('supplier.edit');
-    Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->name('supplier.update');
-    Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])->name('supplier.destroy');
-    Route::put('/supplier-item/{item}', [SupplierController::class, 'updateItem'])->name('supplier.item.update');
-    Route::delete('/supplier-item/{item}', [SupplierController::class, 'destroyItem'])->name('supplier.item.destroy');
-
+    Route::post('supplier/{supplier}/item', [SupplierController::class, 'storeItem'])->name('supplier.item.store');
+    Route::put('supplier-item/{item}', [SupplierController::class, 'updateItem'])->name('supplier.item.update');
+    Route::delete('supplier-item/{item}', [SupplierController::class, 'destroyItem'])->name('supplier.item.destroy');
+    Route::resource('supplier', SupplierController::class)->except(['create']);
 
     Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
     Route::post('/exchange-rates/update', [ExchangeRateController::class, 'update'])->name('exchange-rates.update');

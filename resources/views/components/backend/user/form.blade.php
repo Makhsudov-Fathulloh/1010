@@ -38,16 +38,16 @@
                                         @enderror
                                     </div>
 
-                                    <div class="mb-3">
-                                        <label for="email" class="form-label">E-mail</label>
-                                        <input type="text" id="email" name="email" class="form-control"
-                                               value="{{ old('email', $user->email ?? '') }}">
-                                        @error('email')
-                                        <div class="text-danger">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
                                     @if (Route::currentRouteName() == 'user.edit')
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">E-mail</label>
+                                            <input type="text" id="email" name="email" class="form-control"
+                                                value="{{ old('email', $user->email ?? '') }}">
+                                            @error('email')
+                                            <div class="text-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
                                         <div class="mb-3">
                                             <label for="current_password">Эски пароль</label>
                                             <input type="password" id="current_password" name="current_password"
