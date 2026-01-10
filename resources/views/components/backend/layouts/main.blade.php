@@ -1333,7 +1333,7 @@
                             @default #333
                         @endswitch
                  ">
-                        <span style="flex: 1; font-size: 1rem;">{{ session($msg) }}</span>
+                        <span style="flex: 1; font-size: 1rem;">{!! session($msg) !!}</span>
                         <button type="button" class="btn-close" aria-label="Close"
                                 style="
                             width: 28px;
@@ -1348,6 +1348,7 @@
                 @endif
             @endforeach
         </div>
+
         <div id="custom-confirm-container"></div>
 
         {{ $slot }}

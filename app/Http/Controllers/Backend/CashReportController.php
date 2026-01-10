@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CashReport;
 use App\Models\ExpenseAndIncome;
 use App\Models\Order;
+use App\Models\ProductReturn;
 use App\Models\User;
 use App\Models\UserDebt;
 use App\Services\StatusService;
@@ -180,7 +181,7 @@ class CashReportController extends Controller
             $totals['total_order_amount'][$currency] = Order::where('currency', $currency)->whereDate('created_at', $today)->sum('total_price');
             $totals['total_amount_paid'][$currency] = Order::where('currency', $currency)->whereDate('created_at', $today)->sum('total_amount_paid');
             $totals['total_remaining_debt'][$currency] = UserDebt::where('currency', $currency)->whereDate('created_at', $today)->sum('amount');
-            $totals['total_return_amount'][$currency] = 0;
+            $totals['total_return_amount'][$currency] = ProductReturn::where('currency', $currency)->whereDate('created_at', $today)->sum('total_amount');
             $totals['total_expense'][$currency] = ExpenseAndIncome::where('currency', $currency)->where('type', ExpenseAndIncome::TYPE_EXPENSE)->whereDate('created_at', $today)->sum('amount');
             $totals['total_income'][$currency] = ExpenseAndIncome::where('currency', $currency)->where('type', ExpenseAndIncome::TYPE_INCOME)->whereDate('created_at', $today)->sum('amount');
             $totals['total_debt_paid'][$currency] = ExpenseAndIncome::where('currency', $currency)->where('type', ExpenseAndIncome::TYPE_DEBT)->whereDate('created_at', $today)->sum('amount');
@@ -205,11 +206,19 @@ class CashReportController extends Controller
 
     private function sendDailyReportToTelegram($report, $totals)
     {
-        $users = User::whereHas('role', function ($query) {
-            $query->whereIn('title', ['Developer', 'Admin', 'Manager']);
-        })->whereNotNull('telegram_chat_id')->get();
+        // $users = User::whereHas('role', function ($query) {
+        //     $query->whereIn('title', ['Developer', 'Admin', 'Manager']);
+        // })->whereNotNull('telegram_chat_id')->get();
 
-        if ($users->isEmpty()) {
+        // if ($users->isEmpty()) {
+        //     return;
+        // }
+
+        $adminChatIds = array_filter(
+            array_map('trim', explode(',', env('TELEGRAM_ADMINS')))
+        );
+
+        if (empty($adminChatIds)) {
             return;
         }
 
@@ -250,8 +259,12 @@ class CashReportController extends Controller
         }
 
 
-        foreach ($users as $user) {
-            TelegramHelper::send($user->telegram_chat_id, $message);
+        // foreach ($users as $user) {
+        //     TelegramHelper::send($user->telegram_chat_id, $message);
+        // }
+
+        foreach ($adminChatIds as $chatId) {
+            TelegramHelper::send($chatId, $message);
         }
     }
 }

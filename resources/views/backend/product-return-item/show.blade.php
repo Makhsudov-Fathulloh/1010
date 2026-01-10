@@ -29,7 +29,7 @@
                 </tr>
                 <tr>
                     <th>Нархи</th>
-                    <td><span class="fw-bold text-success">{{ number_format($productReturnItem->price, 0, '', ' ') }}</span> сум</td>
+                    <td><span class="fw-bold text-success">{{ number_format($productReturnItem->price, 0, '', ' ') }}</span> сўм</td>
                 </tr>
                 <tr>
                     <th>Миқдори</th>
@@ -37,7 +37,7 @@
                 </tr>
                 <tr>
                     <th>Умумий</th>
-                    <td><span class="fw-bold text-info">{{ number_format($productReturnItem->total_price, 0, '', ' ') }}</span> сум</td>
+                    <td><span class="fw-bold text-info">{{ number_format($productReturnItem->total_price, 0, '', ' ') }}</span> сўм</td>
                 </tr>
                 <tr>
                     <th>Created At</th>

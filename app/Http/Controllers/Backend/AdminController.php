@@ -18,7 +18,7 @@ class AdminController extends BaseController
         $lowProducts = ProductVariation::checkLowStock();
 
         if (!empty($lowProducts)) {
-            $message = "Минимал микдордаги махсулотлар: ";
+            $message = "Минимал микдордаги махсулотлар: <br>";
             $items = implode('<br>', $lowProducts);
             $fullMessage = $message . $items;
 

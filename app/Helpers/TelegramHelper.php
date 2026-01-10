@@ -41,12 +41,24 @@ class TelegramHelper
 
     public static function notifyDefect(string $message)
     {
-        $roleIds = Role::whereIn('title', ['Admin', 'Manager', 'Developer'])->pluck('id');
-        $recipients = User::whereIn('role_id', $roleIds)
-            ->whereNotNull('telegram_chat_id')
-            ->pluck('telegram_chat_id');
+        // $roleIds = Role::whereIn('title', ['Admin', 'Manager', 'Developer'])->pluck('id');
+        // $recipients = User::whereIn('role_id', $roleIds)
+        //     ->whereNotNull('telegram_chat_id')
+        //     ->pluck('telegram_chat_id');
 
-        foreach ($recipients as $chatId) {
+        // foreach ($recipients as $chatId) {
+        //     TelegramHelper::send($chatId, $message);
+        // }
+
+        $adminChatIds = array_filter(
+            array_map('trim', explode(',', env('TELEGRAM_ADMINS')))
+        );
+
+        if (empty($adminChatIds)) {
+            return;
+        }
+
+        foreach ($adminChatIds as $chatId) {
             TelegramHelper::send($chatId, $message);
         }
     }

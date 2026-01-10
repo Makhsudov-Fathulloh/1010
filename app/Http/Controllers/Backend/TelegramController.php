@@ -45,12 +45,15 @@ class TelegramController extends Controller
             }
 
             // 🔹 Adminga yuborish
-            $adminChatIds = explode(',', env('TELEGRAM_ADMINS'));
+            // $adminChatIds = explode(',', env('TELEGRAM_ADMINS'));
+
+            $adminChatIds = array_filter(
+                array_map('trim', explode(',', env('TELEGRAM_ADMINS')))
+            );
 
             foreach ($adminChatIds as $adminChatId) {
                 $this->sendMessage($adminChatId, "📩 Янги фойдаланувчи:\n📱 Рақам: {$phone}\n🆔 ChatID: {$chatId}");
             }
-
 
             // 🔹 Bazadan foydalanuvchini topish
             $user = User::where('phone', $phone)->first();
