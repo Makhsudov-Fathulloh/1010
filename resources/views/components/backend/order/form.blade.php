@@ -89,8 +89,8 @@
                             style="height: 28px; white-space: nowrap; padding: 0 10px; font-size: 14px;"
                             data-bs-toggle="modal"
                             data-bs-target="#createClientModal">
-                        <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Клиент
-                    </button>
+                            <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Клиент
+                        </button>
                     </div>
                 </div>
 
