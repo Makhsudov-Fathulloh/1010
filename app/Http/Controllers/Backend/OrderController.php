@@ -391,6 +391,7 @@ class OrderController extends Controller
         }
 
         $users = User::where('role_id', Role::where('title', 'Client')->value('id'))->get();
+        $clientRoleId = Role::where('title', 'Client')->value('id');
 
         $variations = ProductVariation::with('product:id,title')
             ->where('count', '>', 0)
@@ -424,6 +425,7 @@ class OrderController extends Controller
         return view('backend.order.update', [
             'order' => $order,
             'users' => $users,
+            'clientRoleId' => $clientRoleId,
             'variations' => $variations,
             'currentCurrency' => $currentCurrency,
             'currencyLabel' => $currentCurrency == StatusService::CURRENCY_USD ? '$' : 'сўм',
