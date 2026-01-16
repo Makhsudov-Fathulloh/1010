@@ -204,13 +204,44 @@
                         </div>
                     </div>
 
-                      <div class="card-header bg-white py-3 border-bottom-0">
+                    <div class="card-header bg-white py-3 border-bottom-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <button type="button" class="btn btn-primary btn-sm px-3" id="add-row">
                                 <i class="bi bi-plus-lg"></i> + Маҳсулот қўшиш
                             </button>
                             <div class="mb-3">
                                 <h2 class="fw-bold text-primary mb-0" id="grand-total">0</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="type" value="{{ \App\Models\ExpenseAndIncome::TYPE_DEBT }}">
+
+                    <div class="row card-header">
+                        <div class="col-md-8" id="debt-user-wrapper" style="display:none;">
+                            <div class="mb-3">
+                                <label for="user_id">Қарздор</label>
+                                <select name="user_id" id="user_id" class="form-control filter-select2" data-placeholder="Қарздорни танланг">
+                                    <option value=""></option>
+                                    {{-- AJAX orqali yuklanadi --}}
+                                </select>
+                                @error('user_id')
+                                <div class="text-danger">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="currency">Валюта</label>
+                                <select name="currency" id="currency" class="form-control">
+                                    @foreach (\App\Services\StatusService::getCurrency() as $key => $label)
+                                        <option value="{{ $key }}"
+                                            {{ old('currency', $productReturn->currency ?? 'UZS') == $key ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -222,6 +253,7 @@
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -351,6 +383,38 @@
                 recalc();
             } else {
                 alert("Kamida bitta mahsulot bo'lishi lozim.");
+            }
+        });
+    });
+</script>
+
+<script>
+    function loadUsersByCurrency(currency, selectedUserId = null) {
+        const type = $('input[name="type"]').val(); // type DEBT bo'lishi kerak
+
+        $.get('{{ route('expense-and-income.users-by-currency') }}', {currency, type}, function(res) {
+            $('#user_id').html(res.options);
+
+            // Agar avval tanlangan user bo‘lsa — uni selectda belgilaymiz
+            if (selectedUserId) {
+                $('#user_id').val(selectedUserId).trigger('change');
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        const type = parseInt($('input[name="type"]').val());
+        const initialCurrency = $('#currency').val();
+        const selectedUserId = '{{ old('user_id', $productReturn->user_id ?? '') }}';
+
+        if (type === {{ \App\Models\ExpenseAndIncome::TYPE_DEBT }}) {
+            $('#debt-user-wrapper').show();
+            loadUsersByCurrency(initialCurrency, selectedUserId);
+        }
+
+        $('#currency').change(function () {
+            if (type === {{ \App\Models\ExpenseAndIncome::TYPE_DEBT }}) {
+                loadUsersByCurrency($(this).val(), selectedUserId);
             }
         });
     });

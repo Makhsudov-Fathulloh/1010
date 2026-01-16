@@ -299,6 +299,7 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'amount' => $order->remaining_debt,
                     'currency' => $order->currency,
+                    'source' => UserDebt::SOURCE_ORDER,
                 ]);
             }
 
@@ -555,23 +556,25 @@ class OrderController extends Controller
             ]);
 
             // 🔹 Foydalanuvchi qarzi
-            $userDebt = UserDebt::where('order_id', $order->id)->first();
+            // $userDebt = UserDebt::where('order_id', $order->id)->first();
 
-            if ($userDebt) {
-                // Eski qarz mavjud bo‘lsa — yangilaymiz
-                $userDebt->update([
-                    'amount' => $order->remaining_debt,
-                    'currency' => $order->currency,
-                ]);
-            } else {
-                // Yangi order uchun qarz yozilmagan bo‘lsa — yaratamiz
-                UserDebt::create([
-                    'user_id' => $order->user_id,
-                    'order_id' => $order->id,
-                    'amount' => $order->remaining_debt,
-                    'currency' => $order->currency,
-                ]);
-            }
+            // if ($userDebt) {
+            //     // Eski qarz mavjud bo‘lsa — yangilaymiz
+            //     $userDebt->update([
+            //         'amount' => $order->remaining_debt,
+            //         'currency' => $order->currency,
+            //     ]);
+            // } else {
+            //     // Yangi order uchun qarz yozilmagan bo‘lsa — yaratamiz
+            //     if ($order->remaining_debt > 0) {
+            //         UserDebt::create([
+            //             'user_id' => $order->user_id,
+            //             'order_id' => $order->id,
+            //             'amount' => $order->remaining_debt,
+            //             'currency' => $order->currency,
+            //         ]);
+            //     }
+            // }
 
             // 🔹 OrderItems va Profit/Loss
             $usdRate = ExchangeRates::where('currency', 'USD')->value('rate');
@@ -665,28 +668,8 @@ class OrderController extends Controller
             }
 
             // 2. Buyurtma va uning elementlarini o'chirish
-            $userId = $order->user_id;
-            $currency = $order->currency;
-
             OrderItem::where('order_id', $order->id)->delete();
             $order->delete();
-
-            // 3. Foydalanuvchi qarzini qaytadan hisoblash (RECALCULATE)
-            // Bu eng xavfsiz usul: hamma buyurtmalar qarzi yig'iladi
-            if ($userId) {
-                $totalRemainingDebt = \App\Models\Order::where('user_id', $userId)
-                    ->where('currency', $currency)
-                    ->sum('remaining_debt');
-
-                $userDebt = \App\Models\UserDebt::where('user_id', $userId)
-                    ->where('currency', $currency)
-                    ->first();
-
-                if ($userDebt) {
-                    $userDebt->amount = $totalRemainingDebt;
-                    $userDebt->save();
-                }
-            }
 
             DB::commit();
 

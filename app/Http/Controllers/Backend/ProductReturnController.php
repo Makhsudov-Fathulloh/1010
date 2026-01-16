@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Search\ProductReturnSearch;
+use Illuminate\Validation\ValidationException;
 
 class ProductReturnController extends Controller
 {
@@ -102,12 +103,14 @@ class ProductReturnController extends Controller
             'items.*.product_variation_id' => 'required|exists:product_variation,id',
             'items.*.count' => 'required|numeric|min:0.001',
             'items.*.price' => 'required|numeric|min:0',
+            'user_id' => 'nullable|exists:user,id', // Foydalanuvchi tanlanishi mumkin
+            'currency' => 'nullable|integer',
         ]);
 
         // Dollardan so'mga o'tkatish kursini olish (masalan, 1-id dagi USD kursi)
         $usdRate = \App\Models\ExchangeRates::where('currency', 'USD')->value('rate') ?? 1;
 
-        DB::transaction(function () use ($data, $usdRate) {
+        DB::transaction(function () use ($data, $usdRate,  $request) {
             $grandTotalUzs = 0;
 
             // 1. Dastlabki hisob-kitob (Hamma narsani UZS ga keltirish)
@@ -129,8 +132,14 @@ class ProductReturnController extends Controller
             }
 
             // 2. Bitta Expense yaratish (Faqat UZS da)
+            $title = "Mahsulotlar qaytimi #" . (ExpenseAndIncome::max('id') + 1);
+
+            if ($request->filled('user_id')) {
+                $title .= ', qarzdorlikdan olibtashlandi!';
+            }
+
             $expense = ExpenseAndIncome::create([
-                'title'        => "Mahsulotlar qaytimi #" . (ExpenseAndIncome::max('id') + 1),
+                'title'        => $title,
                 'amount'       => $grandTotalUzs,
                 'currency'     => \App\Services\StatusService::CURRENCY_UZS,
                 'type'         => ExpenseAndIncome::TYPE_EXPENSE,
@@ -166,6 +175,45 @@ class ProductReturnController extends Controller
                 $variation->save();
                 // $variation->increment('count', $item['count']);
             }
+
+            // 5. Agar user_id tanlangan bo'lsa, qarzni kamaytirish
+            if ($request->filled('user_id') && $request->filled('currency')) {
+                $user = User::with(['userDebt' => fn($q) => $q->where('currency', $request->currency)])
+                    ->find($request->user_id);
+
+                // Agar USD bo'lsa, kursni olamiz
+                $rate = $request->currency == StatusService::CURRENCY_USD ? $usdRate : 1;
+
+                // GrandTotalni tanlangan currency ga o'tkazish
+                $amountForDebt = $grandTotalUzs;
+                if ($request->currency == StatusService::CURRENCY_USD) {
+                    $amountForDebt = $grandTotalUzs / $rate; // UZS -> USD
+                }
+
+                $totalDebt = $user->userDebt->sum('amount');
+
+                // Qarzdorlik yetarli emas bo'lsa to'xtatish
+                if ($totalDebt < $amountForDebt) {
+                    throw ValidationException::withMessages([
+                        'user_id' => "Қарздорлик миқдори йетарли емас. Максимал суммаси: " . \App\Helpers\PriceHelper::format($totalDebt, $request->currency, false)
+                    ]);
+                }
+
+                $remaining = $amountForDebt;
+
+                foreach ($user->userDebt as $debt) {
+                    if ($remaining <= 0) break;
+
+                    if ($debt->amount >= $remaining) {
+                        $debt->amount -= $remaining;
+                        $remaining = 0;
+                    } else {
+                        $remaining -= $debt->amount;
+                        $debt->amount = 0;
+                    }
+                    $debt->save();
+                }
+            }
         });
 
         return redirect()->route('product-return.index')->with('success', 'Махсулот қайтарилди!');
@@ -194,8 +242,12 @@ class ProductReturnController extends Controller
             }
             return $variation;
         });
-        
-        return view('backend.product-return.update', compact('productReturn', 'variations'));
+
+        // Agar user_id va currency old value ko‘rsatilishini xohlasak
+        $oldUserId = $productReturn->expense->user_id ?? null;
+        $oldCurrency = $productReturn->currency ?? StatusService::CURRENCY_UZS;
+
+        return view('backend.product-return.update', compact('productReturn', 'variations', 'oldUserId', 'oldCurrency'));
     }
 
     public function update(Request $request, ProductReturn $productReturn)
@@ -209,14 +261,15 @@ class ProductReturnController extends Controller
             'items.*.product_variation_id' => 'required|exists:product_variation,id',
             'items.*.count' => 'required|numeric|min:0.001',
             'items.*.price' => 'required|numeric|min:0',
+            'user_id' => 'nullable|exists:user,id',
+            'currency' => 'nullable|integer',
         ]);
 
         $usdRate = \App\Models\ExchangeRates::where('currency', 'USD')->value('rate') ?? 1;
 
-        DB::transaction(function () use ($data, $productReturn, $usdRate) {
+        DB::transaction(function () use ($data, $productReturn, $usdRate, $request) {
 
-            // 1. Avval eski itemlar bo'yicha ombor qoldig'ini qaytaramiz
-            // Chunki qaytim bo'lganda stock ko'paygan edi, endi o'sha ko'paygan qismini ayiramiz
+            // 1. Avval eski itemlar bo'yicha ombor qoldig'ini kamaytiramiz
             foreach ($productReturn->items as $oldItem) {
                 $oldVariation = ProductVariation::lockForUpdate()->find($oldItem->product_variation_id);
                 if ($oldVariation) {
@@ -225,12 +278,12 @@ class ProductReturnController extends Controller
                 }
             }
 
-            // 2. Eski itemlarni o'chirib tashlaymiz
+            // 2. Eski itemlarni o'chiramiz
             $productReturn->items()->delete();
 
             $grandTotalUzs = 0;
 
-            // 3. Yangi ma'lumotlar asosida itemlarni yaratamiz va stockni yangilaymiz
+            // 3. Yangi itemlar va stockni yangilash
             foreach ($data['items'] as $item) {
                 $variation = ProductVariation::lockForUpdate()->findOrFail($item['product_variation_id']);
 
@@ -238,15 +291,13 @@ class ProductReturnController extends Controller
                 $itemCount = $item['count'];
                 $totalPrice = $itemPrice * $itemCount;
 
-                // Kurs bo'yicha UZS ga hisoblash
+                // USD bo'lsa, kursga o'tkazish (grandTotalUzs uchun)
                 if ($variation->currency == \App\Services\StatusService::CURRENCY_USD) {
-                    // $grandTotalUzs += ($totalPrice * $usdRate);
                     $grandTotalUzs += $totalPrice;
                 } else {
                     $grandTotalUzs += $totalPrice;
                 }
 
-                // Yangi item yaratish
                 $productReturn->items()->create([
                     'product_variation_id' => $variation->id,
                     'count'                => $itemCount,
@@ -254,24 +305,69 @@ class ProductReturnController extends Controller
                     'total_price'          => $totalPrice,
                 ]);
 
-                // Ombor qoldig'ini oshirish
                 $variation->count += $itemCount;
                 $variation->save();
             }
 
-            // 4. Master ProductReturn modelini yangilash
+            // 4. Qarzdorlik tekshiruvi va kamaytirish
+            if ($request->filled('user_id') && $request->filled('currency')) {
+                $user = User::with(['userDebt' => fn($q) => $q->where('currency', $request->currency)])
+                    ->find($request->user_id);
+
+                $rate = $request->currency == StatusService::CURRENCY_USD ? $usdRate : 1;
+
+                $amountForDebt = $grandTotalUzs;
+                if ($request->currency == StatusService::CURRENCY_USD) {
+                    $amountForDebt = $grandTotalUzs / $rate;
+                }
+
+                $totalDebt = $user->userDebt->sum('amount');
+
+                if ($totalDebt < $amountForDebt) {
+                    throw ValidationException::withMessages([
+                        'user_id' => "Қарздорлик миқдори йетарли емас. Максимал суммаси: " .
+                            \App\Helpers\PriceHelper::format($totalDebt, $request->currency, false)
+                    ]);
+                }
+
+                $remaining = $amountForDebt;
+                foreach ($user->userDebt as $debt) {
+                    if ($remaining <= 0) break;
+
+                    if ($debt->amount >= $remaining) {
+                        $debt->amount -= $remaining;
+                        $remaining = 0;
+                    } else {
+                        $remaining -= $debt->amount;
+                        $debt->amount = 0;
+                    }
+                    $debt->save();
+                }
+            }
+
+            // 5. Master ProductReturn yangilash
+            $title = "Qaytim " . now()->format('d.m.Y H:i');
+            if ($request->filled('user_id')) {
+                $title .= ', qarzdorlikdan olibtashlandi!';
+            }
+
             $productReturn->update([
                 'total_amount' => $grandTotalUzs,
                 'rate'         => $usdRate,
-                'title'        => $request->title ?? $productReturn->title,
+                'title'        => $title,
+                'user_id'      => auth()->id(),
             ]);
 
-            // 5. Bog'langan Expense (Xarajat) ma'lumotlarini yangilash
+            // 6. Bog'langan Expense update
             if ($productReturn->expense) {
+                $expenseTitle = "Mahsulotlar qaytimi #" . $productReturn->expense->id;
+                if ($request->filled('user_id')) {
+                    $expenseTitle .= ', qarzdorlikdan olibtashlandi!';
+                }
+
                 $productReturn->expense->update([
                     'amount' => $grandTotalUzs,
-                    // Agar xarajat nomi ham o'zgarishi kerak bo'lsa:
-                    // 'title' => "Mahsulotlar qaytimi #" . $productReturn->expense->id
+                    'title'  => $expenseTitle,
                 ]);
             }
         });

@@ -359,8 +359,8 @@
                         <div class="w-100">
                             <p>Умумий қарздорлик:</p>
                             <h5>
-                              {{ number_format($orderRemainingDebtUzs, 0, '', ' ') }} сўм<br>
-                              {{ number_format($orderRemainingDebtUsd, 2, '.', ' ') }} $
+                              {{ number_format($remainingDebtUzs, 0, '', ' ') }} сўм<br>
+                              {{ number_format($remainingDebtUsd, 2, '.', ' ') }} $
                             </h5>
                         </div>
                         <div>

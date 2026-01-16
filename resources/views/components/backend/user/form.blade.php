@@ -244,17 +244,15 @@
                         @elseif (Route::currentRouteName() == 'user.edit')
                             <div class="mb-3">
                                 <div class="mb-3">
-                                    <label for="debt_uzs" class="form-label">Қарздорлик (UZS)</label>
-                                    <input type="text" id="debt_uzs" name="debt_uzs" class="form-control filter-numeric-decimal"
-                                           value="{{ old('debt_uzs', $debtUzs) }}">
+                                    <label for="debt_uzs" class="form-label">Қарздорлик <span class="text-danger fw-bold"> {{ number_format(old('debt_uzs', $debtUzs), 0, '', ' ') }} </span> (UZS)</label>
+                                    <input type="text" id="debt_uzs" name="debt_uzs" class="form-control filter-numeric-decimal">,
                                 </div>
                                 @error('debt_uzs')
                                 <div class="text-danger">{{ $message }}</div>
                                 @enderror
                                 <div class="mb-3">
-                                    <label for="debt_usd" class="form-label">Қарздорлик (USD)</label>
-                                    <input type="text" id="debt_usd" name="debt_usd" class="form-control filter-numeric-decimal"
-                                           value="{{ old('debt_usd', $debtUsd) }}">
+                                    <label for="debt_usd" class="form-label">Қарздорлик <span class="text-danger fw-bold"> {{ number_format(old('debt_usd', $debtUsd), 2, '.', ' ') }} </span> (USD)</label>
+                                    <input type="text" id="debt_usd" name="debt_usd" class="form-control filter-numeric-decimal">
                                 </div>
                                 @error('debt_usd')
                                 <div class="text-danger">{{ $message }}</div>

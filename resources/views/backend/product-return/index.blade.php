@@ -101,7 +101,7 @@
                                         <x-backend.action
                                             route="product-return" listRoute="product-return-item" :id="$return->id"
                                             subRoute="items"
-                                            :list="true" :view="true" :edit="true" :delete="true"
+                                            :list="true" :view="true" :delete="true"
                                             listTitle="Қайтиш маҳсулотларни кўриш"
                                             viewClass="btn btn-secondary btn-sm"
                                         />
@@ -143,7 +143,7 @@
                                         <x-backend.action
                                             route="product-return" listRoute="product-return-item" :id="$return->id"
                                             subRoute="items"
-                                            :list="true" :view="true" :edit="true" :delete="true"
+                                            :list="true" :view="true" :delete="true"
                                             listTitle="Қайтиш маҳсулотларни кўриш"
                                             viewClass="btn btn-secondary btn-sm"
                                         />
