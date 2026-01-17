@@ -59,7 +59,7 @@ class LogSearch
 
         // 🔥 Default sort (sort parametri yo‘q bo‘lsa)
         if (!$request->has('sort')) {
-            $query->orderBy('created_at');
+            $query->orderByDesc('id');
         }
 
         return $query;

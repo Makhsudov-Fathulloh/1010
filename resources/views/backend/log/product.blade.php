@@ -2,7 +2,7 @@
     use App\Helpers\CountHelper;
 @endphp
 
-<x-backend.layouts.main title="{{ 'Махсулотлар' }}">
+<x-backend.layouts.main title="{{ 'Омборга кирим' }}">
 
     <div class="row">
         <div class="card shadow w-100">
