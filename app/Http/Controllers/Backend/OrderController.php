@@ -104,7 +104,7 @@ class OrderController extends Controller
             $orderRemainingDebtUsd = $usdOrders->sum('remaining_debt') - $totalDebtPaidUsd;
         }
 
-        $orders = $query->paginate(20)->withQueryString();
+        $orders = $query->paginate(300)->withQueryString();
 
         return view('backend.order.index', compact(
             'orders',
