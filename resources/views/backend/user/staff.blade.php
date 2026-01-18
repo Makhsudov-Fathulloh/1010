@@ -303,7 +303,7 @@
                     <div class="card-stats uzs">
                         <div class="w-100">
                            <p>Қарздорлик(сўм)</strong></p>
-                            <h5>{{ number_format($debtUzs, 0, '', ' ') }} сўм</h5>
+                            <h5>{{ number_format($totalDebtUzs, 0, '', ' ') }} сўм</h5>
                         </div>
                         <div>
                             <i class="bi bi-currency-exchange"></i>
@@ -314,7 +314,7 @@
                     <div class="card-stats usd">
                         <div class="w-100">
                             <p>Қарздорлик($)</p>
-                            <h5>{{ number_format($debtUsd, 2, '.', ' ') }} $</h5>
+                            <h5>{{ number_format($totalDebtUsd, 2, '.', ' ') }} $</h5>
                         </div>
                         <div>
                             <i class="bi bi-currency-euro"></i>

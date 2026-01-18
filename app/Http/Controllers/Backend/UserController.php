@@ -134,23 +134,23 @@ class UserController extends Controller
             $staffCount = $filteredIds->count();
 
             // Summalar
-            $debtUzs = \App\Models\UserDebt::whereIn('user_id', $filteredIds)
+            $totalDebtUzs = \App\Models\UserDebt::whereIn('user_id', $filteredIds)
                 ->where('currency', \App\Services\StatusService::CURRENCY_UZS)
                 ->sum('amount');
 
-            $debtUsd = \App\Models\UserDebt::whereIn('user_id', $filteredIds)
+            $totalDebtUsd = \App\Models\UserDebt::whereIn('user_id', $filteredIds)
                 ->where('currency', \App\Services\StatusService::CURRENCY_USD)
                 ->sum('amount');
         } else {
             $staffCount = User::whereIn('role_id', $staffId)->count();
 
-            $debtUzs = \App\Models\UserDebt::whereHas('user', function ($q) use ($staffId) {
+            $totalDebtUzs = \App\Models\UserDebt::whereHas('user', function ($q) use ($staffId) {
                 $q->whereIn('role_id', $staffId);
             })
                 ->where('currency', \App\Services\StatusService::CURRENCY_UZS)
                 ->sum('amount');
 
-            $debtUsd = \App\Models\UserDebt::whereHas('user', function ($q) use ($staffId) {
+            $totalDebtUsd = \App\Models\UserDebt::whereHas('user', function ($q) use ($staffId) {
                 $q->whereIn('role_id', $staffId);
             })
                 ->where('currency', \App\Services\StatusService::CURRENCY_USD)
@@ -165,8 +165,8 @@ class UserController extends Controller
             'roles',
             'isFiltered',
             'staffCount',
-            'debtUzs',
-            'debtUsd',
+            'totalDebtUzs',
+            'totalDebtUsd',
         ));
     }
 
