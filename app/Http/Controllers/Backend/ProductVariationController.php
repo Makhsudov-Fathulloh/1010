@@ -140,7 +140,7 @@ class ProductVariationController extends Controller
     public function addCount(Request $request, ProductVariation $variation)
     {
         $request->validate([
-            'add_count' => 'required|integer|min:1',
+            'add_count' => 'required|numeric|min:0.001',
         ]);
 
         $variation->total_price = $variation->count * $variation->price;

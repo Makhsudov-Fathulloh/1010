@@ -111,7 +111,7 @@ class ProductVariation extends Model
         ];
     }
 
-    public function decrementStock(int $qty): void
+    public function decrementStock($qty): void
     {
         if ($this->count < $qty) {
             throw new \RuntimeException("Омборда етарли маҳсулот мавжуд эмас ({$this->title})");
@@ -127,7 +127,7 @@ class ProductVariation extends Model
         }
     }
 
-    public function incrementStock(int $qty): void
+    public function incrementStock($qty): void
     {
         $this->count += $qty;
         $this->recalculateTotalPrice();

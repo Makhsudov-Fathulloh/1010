@@ -82,9 +82,9 @@
 
                                     <div class="row">
                                         <div class="col-md-5 mb-3">
-                                            <label for="count" class="form-label">Сони</label>
+                                            <label for="count" class="form-label">Микдори</label>
                                             <input type="text" id="count" name="count"
-                                                   class="form-control filter-numeric"
+                                                   class="form-control filter-numeric-decimal"
                                                    value="{{ old('count', \App\Helpers\CountHelper::format($productVariation->count, $productVariation->unit, false) ?? '') }}">
                                             @error('count')
                                             <div class="text-danger small">{{ $message }}</div>

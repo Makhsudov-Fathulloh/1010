@@ -140,6 +140,7 @@
                                                     data-id="{{ $productVariation->id }}"
                                                     data-title="{{ $productVariation->title }}"
                                                     data-count="{{ $productVariation->count }}"
+                                                    data-unit="{{ $productVariation->unit }}"
                                                     title="Маҳсулот миқдорини ошириш">
                                                 <i class="fa fa-plus"></i> Қўшиш
                                             </button>
@@ -250,7 +251,8 @@
                                     <div class="mb-3">
                                         <label>Қўшиладиган маҳсулот миқдори:</label>
                                         <input type="number" id="add_count" name="add_count" class="form-control"
-                                               min="1" required>
+                                                min="0.001" step="0.001" required>
+
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -377,26 +379,49 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+
             const addCountModalEl = document.getElementById('addCountModal');
             if (!addCountModalEl) return;
 
             const addCountModal = new bootstrap.Modal(addCountModalEl);
 
+             function getUnitConfig(unit) {
+                switch (parseInt(unit, 10)) {
+                    case {{ \App\Services\StatusService::UNIT_PSC }}:
+                        return { decimals: 0, step: 1, min: 1 };
+                    case {{ \App\Services\StatusService::UNIT_KG }}:
+                        return { decimals: 3, step: 0.001, min: 0.001 };
+                    case {{ \App\Services\StatusService::UNIT_METER }}:
+                        return { decimals: 2, step: 0.01, min: 0.01 };
+                    default:
+                        return { decimals: 0, step: 1, min: 1 };
+                }
+            }
+
             // 🔹 Button bosganda modalni ochish
             document.querySelectorAll('.add-count-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
+
                     const id = this.dataset.id;
                     const title = this.dataset.title;
                     const count = parseFloat(this.dataset.count);
-                    const typeCount = parseInt(this.dataset.unit || 1, 10);
+                    const unit  = this.dataset.unit;
+
+                    const cfg = getUnitConfig(unit);
 
                     document.getElementById('variation_id').value = id;
                     document.getElementById('variation_title').value = title;
-                    document.getElementById('current_count').value = Number(count).toLocaleString('ru-RU', {
-                        minimumFractionDigits: typeCount === 1 ? 0 : 3,
-                        maximumFractionDigits: typeCount === 1 ? 0 : 3
-                    });
-                    document.getElementById('add_count').value = '';
+                    document.getElementById('current_count').value =
+                        Number(count).toLocaleString('en-US', {
+                            minimumFractionDigits: cfg.decimals,
+                            maximumFractionDigits: cfg.decimals
+                        });
+
+                    const addInput = document.getElementById('add_count');
+                    addInput.value = '';
+                    addInput.step  = cfg.step;
+                    addInput.min   = cfg.min;
+
                     addCountModal.show();
                 });
             });
@@ -405,87 +430,105 @@
             if (!form) return;
 
             // 🔹 Forma yuborilganda
-            form.addEventListener('submit', async function (e) {
-                e.preventDefault();
+            document.getElementById('addCountForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-                const id = document.getElementById('variation_id').value;
-                const addCount = parseInt(document.getElementById('add_count').value, 10);
-                const typeCount = parseInt(document.querySelector('.add-count-btn[data-id="'+id+'"]').dataset.unit || 1, 10);
+            const id = document.getElementById('variation_id').value;
+            const addInput = document.getElementById('add_count');
+            const addCount = parseFloat(addInput.value);
+            const btn  = document.querySelector('.add-count-btn[data-id="'+id+'"]');
+            const unit = btn.dataset.unit;
+            const cfg  = getUnitConfig(unit);
 
-                if (isNaN(addCount) || addCount < 1) {
-                    showCustomConfirm('Илтимос, маҳсулот миқдорини киритинг!', 'warning');
+            if (isNaN(addCount) || addCount < cfg.min) {
+                showCustomConfirm('Илтимос, маҳсулот миқдорини киритинг!', 'warning');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/admin/product-variation/${id}/add-count`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({add_count: addCount})
+                });
+
+                if (!res.ok) {
+                    const json = await res.json().catch(() => null);
+                    throw new Error(json?.message || `Server returned ${res.status}`);
+                }
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    showCustomConfirm(data.message || 'Хатолик!', 'error');
                     return;
                 }
 
-                try {
-                    const res = await fetch(`/admin/product-variation/${id}/add-count`, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({add_count: addCount})
-                    });
+                if (data.success) {
+                    // 🔹 Jadvaldagi qiymatlarni yangilash (desktop va mobile)
+                    ['desktop','mobile'].forEach(prefix => {
+                    const row = document.getElementById(`row-${prefix}-${id}`);
+                    if (!row) return;
 
-                    if (!res.ok) {
-                        const json = await res.json().catch(() => null);
-                        throw new Error(json?.message || `Server returned ${res.status}`);
+                    const countEl = row.querySelector('.count');
+                    const totalEl = row.querySelector('.total_price');
+
+                    if (countEl) {
+                        countEl.innerText = Number(data.new_count).toLocaleString('en-US', {
+                            minimumFractionDigits: cfg.decimals,
+                            maximumFractionDigits: cfg.decimals
+                        });
                     }
 
-                    const data = await res.json();
+                    if (totalEl) {
+                        totalEl.innerText = Number(data.new_total_price).toLocaleString('en-US');
+                    }
 
-                    if (data.success) {
-                        // 🔹 Jadvaldagi qiymatlarni yangilash (desktop va mobile)
-                        ['desktop', 'mobile'].forEach(prefix => {
-                            const row = document.getElementById(`row-${prefix}-${id}`);
-                            if (row) {
-                                const countEl = row.querySelector('.count');
-                                const totalEl = row.querySelector('.total_price');
+                    row.querySelectorAll('.add-count-btn').forEach(b => {
+                        b.dataset.count = data.new_count;
+                    });
+                });
+                    addCountModal.hide();
 
-                                if (countEl) {
-                                    countEl.innerText = Number(data.new_count).toLocaleString('ru-RU', {
-                                        minimumFractionDigits: typeCount === 1 ? 0 : 3,
-                                        maximumFractionDigits: typeCount === 1 ? 0 : 3
-                                    });
-                                }
-                                if (totalEl) totalEl.innerText = Number(data.new_total_price).toLocaleString('ru-RU');
+                    const unitMap = {
+                        {{ \App\Services\StatusService::UNIT_PSC }}: 'дона',
+                        {{ \App\Services\StatusService::UNIT_KG }}: 'кг',
+                        {{ \App\Services\StatusService::UNIT_METER }}: 'метр',
+                    };
 
-                                row.querySelectorAll('.add-count-btn').forEach(btn => {
-                                    btn.dataset.count = data.new_count;
-                                });
-                            }
-                        });
+                    const unitLabel = unitMap[data.unit] ?? '';
 
-                        addCountModal.hide();
+                    // 🔹 Modal yopilgach alert chiqadi
+                    setTimeout(() => {
+                        showCustomConfirm(`
+                    Маҳсулот муваффақиятли қўшилди!<br>
+                    <b>${data.title || ''}</b><br>
+                    <span>
+                        Қўшилди: <b>${addCount}</b> ${unitLabel}.<br>
+                        Жами: <b>${data.count || data.new_count || 0}</b> ${unitLabel}.
+                    </span>
+                `, 'success');
+                    }, 300);
 
-                        // 🔹 Modal yopilgach alert chiqadi
-                        setTimeout(() => {
-                            showCustomConfirm(`
-                        Маҳсулот муваффақиятли қўшилди!<br>
-                        <b>${data.title || ''}</b><br>
-                        <span>
-                            Қўшилди: <b>${addCount}</b> дона.<br>
-                            Жами: <b>${data.count || data.new_count || 0}</b> дона.
-                        </span>
-                    `, 'success');
-                        }, 300);
-
-                        const somCountEl = document.getElementById('stat-som-count');
-                        const dollarCountEl = document.getElementById('stat-dollar-count');
-                        const totalPriceEl = document.getElementById('stat-total-price');
+                    const somCountEl = document.getElementById('stat-som-count');
+                    const dollarCountEl = document.getElementById('stat-dollar-count');
+                    const totalPriceEl = document.getElementById('stat-total-price');
 
                         if (somCountEl) somCountEl.innerText = Number(data.all_som_count).toLocaleString('ru-RU') + ' та';
                         if (dollarCountEl) dollarCountEl.innerText = Number(data.all_dollar_count).toLocaleString('ru-RU') + ' та';
                         if (totalPriceEl) totalPriceEl.innerText = Number(data.total_price).toLocaleString('ru-RU') + ' сўм';
 
-                    } else {
-                        setTimeout(() => {
-                            showCustomConfirm(data.message || 'Хатолик юз берди!', 'error');
-                        }, 400);
-                    }
+                } else {
+                    setTimeout(() => {
+                        showCustomConfirm(data.message || 'Хатолик юз берди!', 'error');
+                    }, 400);
+                }
 
                 } catch (err) {
                     console.error(err);
@@ -593,6 +636,3 @@
     </script>
 
 </x-backend.layouts.main>
-
-
-
