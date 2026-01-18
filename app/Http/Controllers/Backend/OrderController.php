@@ -63,6 +63,7 @@ class OrderController extends Controller
             $orderTotalPriceUzs = (clone $filteredUzsOrders)->sum('total_price');
             $orderAmountPaidUzs = (clone $filteredUzsOrders)->sum('total_amount_paid');
             $orderRemainingDebtUzs = (clone $filteredUzsOrders)->sum('remaining_debt');
+
             $filteredDebtUzs = ExpenseAndIncome::where('type', ExpenseAndIncome::TYPE_DEBT)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year);
 
             if (!empty($filters['user_id'])) {
@@ -94,17 +95,19 @@ class OrderController extends Controller
             $orderCountUzs = $uzsOrders->count();
             $orderTotalPriceUzs = $uzsOrders->sum('total_price');
             $orderAmountPaidUzs = $uzsOrders->sum('total_amount_paid') + $totalDebtPaidUzs;
-            $orderRemainingDebtUzs = $uzsOrders->sum('remaining_debt') - $totalDebtPaidUzs;
+            // $orderRemainingDebtUzs = $uzsOrders->sum('remaining_debt') - $totalDebtPaidUzs;
+            $orderRemainingDebtUzs = UserDebt::where('currency', StatusService::CURRENCY_UZS)->sum('amount');
 
             $totalDebtPaidUsd = ExpenseAndIncome::where('type', ExpenseAndIncome::TYPE_DEBT)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum('amount');
             $usdOrders = Order::where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year);
             $orderCountUsd = $usdOrders->count();
             $orderTotalPriceUsd = $usdOrders->sum('total_price');
             $orderAmountPaidUsd = $usdOrders->sum('total_amount_paid') + $totalDebtPaidUsd;
-            $orderRemainingDebtUsd = $usdOrders->sum('remaining_debt') - $totalDebtPaidUsd;
+            // $orderRemainingDebtUsd = $usdOrders->sum('remaining_debt') - $totalDebtPaidUsd;
+            $orderRemainingDebtUsd = UserDebt::where('currency', StatusService::CURRENCY_USD)->sum('amount');
         }
 
-        $orders = $query->paginate(300)->withQueryString();
+        $orders = $query->paginate(3000)->withQueryString();
 
         return view('backend.order.index', compact(
             'orders',

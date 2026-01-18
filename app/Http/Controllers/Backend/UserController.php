@@ -211,20 +211,12 @@ class UserController extends Controller
             $orderCountUzs = (clone $statsQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->count();
             $orderTotalPriceUzs = (clone $statsQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum('total_price');
             $orderAmountPaidUzs = (clone $statsQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum('total_amount_paid');
-
-            // $orderRemainingDebtUzs = (clone $statsQuery)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum('remaining_debt');
-            $debtUzs = $debts->firstWhere('currency', StatusService::CURRENCY_UZS)['total_amount'] ?? 0;
-            $paidDebtUzs = ExpenseAndIncome::where('user_id', $user->id)->where('type', ExpenseAndIncome::TYPE_DEBT)->where('currency', StatusService::CURRENCY_UZS)->whereYear('created_at', now()->year)->sum('amount');
-            $remainingDebtUzs = max(0, $debtUzs - $paidDebtUzs);
+            $remainingDebtUzs = $debts->firstWhere('currency', StatusService::CURRENCY_UZS)['total_amount'] ?? 0;
 
             $orderCountUsd = (clone $statsQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->count();
             $orderTotalPriceUsd = (clone $statsQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum('total_price');
             $orderAmountPaidUsd = (clone $statsQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum('total_amount_paid');
-
-            // $orderRemainingDebtUsd = (clone $statsQuery)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum('remaining_debt');
-            $debtUsd = $debts->firstWhere('currency', StatusService::CURRENCY_USD)['total_amount'] ?? 0;
-            $paidDebtUsd = ExpenseAndIncome::where('user_id', $user->id)->where('type', ExpenseAndIncome::TYPE_DEBT)->where('currency', StatusService::CURRENCY_USD)->whereYear('created_at', now()->year)->sum('amount');
-            $remainingDebtUsd = max(0, $debtUsd - $paidDebtUsd);
+            $remainingDebtUsd = $debts->firstWhere('currency', StatusService::CURRENCY_USD)['total_amount'] ?? 0;
 
             // Pagination
             $orders = $query->paginate(20)->withQueryString();
